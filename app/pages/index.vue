@@ -12,7 +12,18 @@ interface Team {
   season: string;
   team_id: string;
   team_name: string;
+  group_id: string;
   league_name: string;
+  team_organisation_short: string;
+}
+
+interface Meeting {
+  date: string;
+  live: boolean;
+  team_home: string;
+  team_away: string;
+  meeting_id: string;
+  is_meeting_completed: string;
 }
 
 interface ClubsResponse {
@@ -31,25 +42,38 @@ interface TeamsResponse {
   };
 }
 
+interface MeetingGroup {
+  [date: string]: Meeting[]
+}
+
+interface MeetingsResponse {
+  data: {
+    table: {},
+    head_infos: {},
+    meetings_excerpt: {
+      meetings: MeetingGroup[]
+    };
+  };
+}
+
 const search = ref("");
 const clubs = ref<Club[]>([]);
 const selectedClub = ref<Club>();
 const teams = ref<Team[]>([]);
+const meetings = ref<Team[]>([]);
 const selectedTeam = ref<Team>();
 const page = ref(1);
 const totalPages = ref(1);
 const loading = ref(false);
-const loadingMore = ref(false);
+const meetingHeaders = [
+  { title: 'Live', value: 'live' },
+  { title: 'Datum', value: 'date' },
+  { title: 'Heim-Mannschaft', value: 'team_home' },
+  { title: 'Auswährts-Mannschaft', value: 'team_away' },
+  { title: 'Ergebnis', value: 'team_away' },
+];
 
-async function fetchClubs(reset = false) {
-  if (reset) {
-    loading.value = true;
-    page.value = 1;
-    clubs.value = [];
-  } else {
-    loadingMore.value = true;
-  }
-
+async function fetchClubs() {
   try {
     const res = await $fetch<ClubsResponse>("/api/clubs", {
       query: { name: search.value, page: page.value },
@@ -57,11 +81,10 @@ async function fetchClubs(reset = false) {
 
     res.results = res.results.filter((e) => e.clubname !== "-kein-club-");
 
-    clubs.value = reset ? res.results : [...clubs.value, ...res.results];
+    clubs.value = res.results
     totalPages.value = res.pages_count;
   } finally {
     loading.value = false;
-    loadingMore.value = false;
   }
 }
 
@@ -74,7 +97,6 @@ async function fetchTeams() {
         clubId: selectedClub.value.clubnr,
       },
     });
-    console.log(res);
 
     teams.value = res.data.teams_list.club_teams;
   } catch (error) {
@@ -82,13 +104,33 @@ async function fetchTeams() {
   }
 }
 
+async function onTeamSelected() {
+  try {
+    console.log(selectedClub.value);
+    const res = await $fetch<MeetingsResponse>("/api/team-schedule", {
+      query: {
+        association: selectedTeam.value?.team_organisation_short,
+        groupId: selectedTeam.value?.group_id,
+        teamId: selectedTeam.value?.team_id,
+      },
+    });
+
+    meetings.value = res.data.meetings_excerpt.meetings.flatMap(group =>
+        Object.values(group).flat()
+    )
+    console.log(meetings.value)
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+onMounted(() => fetchClubs());
+
 let debounceTimer: ReturnType<typeof setTimeout>;
 watch(search, () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => fetchClubs(true), 300);
 });
-
-onMounted(() => fetchClubs(true));
 
 watch(selectedClub, async (club) => {
   selectedTeam.value = null;
@@ -103,7 +145,7 @@ watch(selectedClub, async (club) => {
 
 <template>
   <v-container class="fill-height" fluid>
-    <v-row justify="center" align="center" class="fill-height">
+    <v-row justify="center" align="center">
       <v-col cols="12" sm="8" md="6" lg="4">
         <p class="text-h6 mb-2">Wähle deinen Verein</p>
 
@@ -155,6 +197,7 @@ watch(selectedClub, async (club) => {
           variant="outlined"
           no-filter
           return-object
+          @update:model-value="onTeamSelected"
         >
           <template #item="{ props: itemProps, item }">
             <v-list-item
@@ -169,6 +212,35 @@ watch(selectedClub, async (club) => {
             </v-list-item>
           </template>
         </v-select>
+      </v-col>
+    </v-row>
+    <v-divider />
+    <v-row>
+      <v-col cols="12">
+        <v-data-table :headers="meetingHeaders" :items="meetings" hide-default-footer>
+          <template #item.live="{ item }">
+            <v-chip
+                v-if="item.live"
+                color="red"
+                size="small"
+                variant="flat"
+            >
+              LIVE
+            </v-chip>
+
+            <v-icon
+                v-else-if="item.is_match_completed"
+                color="green"
+                icon="mdi-check-circle"
+            />
+
+            <v-icon
+                v-else
+                color="grey"
+                icon="mdi-clock-outline"
+            />
+          </template>
+        </v-data-table>
       </v-col>
     </v-row>
   </v-container>
