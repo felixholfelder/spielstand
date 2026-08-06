@@ -20,6 +20,7 @@ env:
 
 jobs:
   qualitygate:
+    name: Qualitygate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -38,6 +39,7 @@ jobs:
         run: bun lint
 
   dockerize:
+    name: Build app and push to Dockerhub
     runs-on: ubuntu-latest
     needs: qualitygate
     steps:
@@ -58,6 +60,7 @@ jobs:
           docker push ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
 
   deploy:
+    name: Deployment
     runs-on: ubuntu-latest
     needs: dockerize
     if: github.actor != 'renovate[bot]'
