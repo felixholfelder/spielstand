@@ -5,6 +5,12 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
+  runtimeConfig: {
+    public: {
+      baseApiUrl: "https://www.mytischtennis.de",
+    },
+  },
+
   build: {
     transpile: ['vuetify'],
   },
