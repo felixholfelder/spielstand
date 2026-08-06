@@ -58,6 +58,7 @@ interface MeetingsResponse {
   };
 }
 
+const router = useRouter();
 const search = ref("");
 const clubs = ref<Club[]>([]);
 const selectedClub = ref<Club>();
@@ -158,6 +159,10 @@ async function restoreFromSession() {
   } finally {
     restoring = false;
   }
+}
+
+function onMeetingClick(_: any, item: {item: Meeting}) {
+  router.push(`/meetings/${item.item.meeting_id}`)
 }
 
 onMounted(async () => {
@@ -297,6 +302,7 @@ watch(selectedClub, async (club) => {
           fixed-header
           height="100%"
           hide-default-footer
+          @click:row="onMeetingClick"
       >
         <template #item.live="{ item }">
           <v-chip v-if="item.live" color="red" size="small" variant="flat">
