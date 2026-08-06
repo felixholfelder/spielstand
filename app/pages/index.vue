@@ -62,8 +62,8 @@ const search = ref("");
 const clubs = ref<Club[]>([]);
 const selectedClub = ref<Club>();
 const teams = ref<Team[]>([]);
-const meetings = ref<Team[]>([]);
-const selectedTeam = ref<Team>();
+const meetings = ref<Meeting[]>([]);
+const selectedTeam = ref<Team | null>();
 const page = ref(1);
 const totalPages = ref(1);
 const loading = ref(false);
@@ -78,6 +78,11 @@ const meetingHeaders = [
   { title: "Heim-Mannschaft", value: "team_home" },
   { title: "Auswährts-Mannschaft", value: "team_away" },
 ];
+
+const STORAGE_KEY_CLUB = "selectedClub";
+const STORAGE_KEY_TEAM = "selectedTeam";
+
+let restoring = false;
 
 async function fetchClubs() {
   try {
@@ -98,8 +103,8 @@ async function fetchTeams() {
   try {
     const res = await $fetch<TeamsResponse>("/api/teams", {
       query: {
-        association: selectedClub.value.organization_short,
-        clubId: selectedClub.value.clubnr,
+        association: selectedClub.value?.organization_short,
+        clubId: selectedClub.value?.clubnr,
       },
     });
 
@@ -129,12 +134,77 @@ async function onTeamSelected() {
   scheduleLoading.value = false;
 }
 
-onMounted(() => fetchClubs());
+async function restoreFromSession() {
+  if (!import.meta.client) return;
+
+  const savedClub = sessionStorage.getItem(STORAGE_KEY_CLUB);
+  const savedTeam = sessionStorage.getItem(STORAGE_KEY_TEAM);
+
+  if (!savedClub) return;
+
+  restoring = true;
+  try {
+    selectedClub.value = JSON.parse(savedClub);
+    await fetchTeams();
+
+    if (savedTeam) {
+      const parsedTeam: Team = JSON.parse(savedTeam);
+      const match = teams.value.find((t) => t.team_id === parsedTeam.team_id);
+      if (match) {
+        selectedTeam.value = match;
+        await onTeamSelected();
+      }
+    }
+  } finally {
+    restoring = false;
+  }
+}
+
+onMounted(async () => {
+  await fetchClubs();
+  await restoreFromSession();
+});
 
 let debounceTimer: ReturnType<typeof setTimeout>;
+
 watch(search, () => {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => fetchClubs(true), 300);
+  debounceTimer = setTimeout(() => fetchClubs(), 300);
+});
+
+watch(selectedClub, async (club) => {
+  if (restoring) return;
+
+  selectedTeam.value = null;
+  meetings.value = [];
+
+  if (!club) {
+    teams.value = [];
+    sessionStorage.removeItem(STORAGE_KEY_CLUB);
+    sessionStorage.removeItem(STORAGE_KEY_TEAM);
+    return;
+  }
+
+  sessionStorage.setItem(STORAGE_KEY_CLUB, JSON.stringify(club));
+  sessionStorage.removeItem(STORAGE_KEY_TEAM);
+
+  await fetchTeams();
+});
+
+watch(selectedTeam, (team) => {
+  if (restoring) return;
+
+  if (!team) {
+    sessionStorage.removeItem(STORAGE_KEY_TEAM);
+    return;
+  }
+
+  sessionStorage.setItem(STORAGE_KEY_TEAM, JSON.stringify(team));
+});
+
+watch(search, () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => fetchClubs(), 300);
 });
 
 watch(selectedClub, async (club) => {
@@ -234,7 +304,7 @@ watch(selectedClub, async (club) => {
           </v-chip>
 
           <v-icon
-              v-else-if="item.is_match_completed"
+              v-else-if="item.is_meeting_completed"
               color="green"
               icon="mdi-check-circle"
           />
