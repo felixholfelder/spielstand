@@ -14,7 +14,7 @@ on:
 
 env:
   NAMESPACE: default
-  APP_NAME: default
+  APP_NAME: spielstand
   IMAGE_NAME: felixholfelder/spielstand
   VERSION: ${{ github.ref_name }}
 
