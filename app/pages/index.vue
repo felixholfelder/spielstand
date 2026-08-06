@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { formatDate } from "~/composables/useDateUtils.ts";
+
 interface Club {
   external_id: string;
   clubname: string;
@@ -43,15 +45,15 @@ interface TeamsResponse {
 }
 
 interface MeetingGroup {
-  [date: string]: Meeting[]
+  [date: string]: Meeting[];
 }
 
 interface MeetingsResponse {
   data: {
-    table: {},
-    head_infos: {},
+    table: {};
+    head_infos: {};
     meetings_excerpt: {
-      meetings: MeetingGroup[]
+      meetings: MeetingGroup[];
     };
   };
 }
@@ -65,12 +67,16 @@ const selectedTeam = ref<Team>();
 const page = ref(1);
 const totalPages = ref(1);
 const loading = ref(false);
+const scheduleLoading = ref(false);
 const meetingHeaders = [
-  { title: 'Live', value: 'live' },
-  { title: 'Datum', value: 'date' },
-  { title: 'Heim-Mannschaft', value: 'team_home' },
-  { title: 'Auswährts-Mannschaft', value: 'team_away' },
-  { title: 'Ergebnis', value: 'team_away' },
+  { title: "Live", value: "live" },
+  {
+    title: "Datum",
+    key: "date",
+    value: (item: Meeting) => formatDate(item.date),
+  },
+  { title: "Heim-Mannschaft", value: "team_home" },
+  { title: "Auswährts-Mannschaft", value: "team_away" },
 ];
 
 async function fetchClubs() {
@@ -81,7 +87,7 @@ async function fetchClubs() {
 
     res.results = res.results.filter((e) => e.clubname !== "-kein-club-");
 
-    clubs.value = res.results
+    clubs.value = res.results;
     totalPages.value = res.pages_count;
   } finally {
     loading.value = false;
@@ -90,7 +96,6 @@ async function fetchClubs() {
 
 async function fetchTeams() {
   try {
-    console.log(selectedClub.value);
     const res = await $fetch<TeamsResponse>("/api/teams", {
       query: {
         association: selectedClub.value.organization_short,
@@ -106,7 +111,7 @@ async function fetchTeams() {
 
 async function onTeamSelected() {
   try {
-    console.log(selectedClub.value);
+    scheduleLoading.value = true;
     const res = await $fetch<MeetingsResponse>("/api/team-schedule", {
       query: {
         association: selectedTeam.value?.team_organisation_short,
@@ -115,13 +120,13 @@ async function onTeamSelected() {
       },
     });
 
-    meetings.value = res.data.meetings_excerpt.meetings.flatMap(group =>
-        Object.values(group).flat()
-    )
-    console.log(meetings.value)
+    meetings.value = res.data.meetings_excerpt.meetings.flatMap((group) =>
+      Object.values(group).flat(),
+    );
   } catch (error) {
     console.error(error);
   }
+  scheduleLoading.value = false;
 }
 
 onMounted(() => fetchClubs());
@@ -144,110 +149,115 @@ watch(selectedClub, async (club) => {
 </script>
 
 <template>
-  <v-container class="fill-height" fluid>
-    <v-row justify="center" align="center">
-      <v-col cols="12" sm="8" md="6" lg="4">
-        <p class="text-h6 mb-2">Wähle deinen Verein</p>
-
-        <v-autocomplete
-          v-model="selectedClub"
-          v-model:search="search"
-          :items="clubs"
-          :loading="loading"
-          item-title="clubname"
-          item-value="clubnr"
-          label="Verein suchen"
-          variant="outlined"
-          clearable
-          no-filter
-          return-object
-        >
-          <template #append-item>
-            <div ref="sentinel" class="pa-2 text-center">
-              <v-progress-circular
-                v-if="loadingMore"
-                indeterminate
-                size="20"
-                color="primary"
-              />
-            </div>
-          </template>
-          <template #item="{ props: itemProps, item }">
-            <v-list-item
-              v-model="item.clubnr"
-              v-bind="itemProps"
-              :title="item.clubname"
-              :subtitle="item.organization_short"
-            />
-          </template>
-          <template #no-data>
-            <v-list-item>
-              <v-list-item-title>Keine Vereine gefunden</v-list-item-title>
-            </v-list-item>
-          </template>
-        </v-autocomplete>
-
-        <p class="text-h6 mb-2">Mannschaft</p>
-        <v-select
-          v-model="selectedTeam"
-          :items="teams"
-          item-title="team_name"
-          item-value="team_id"
-          label="Mannschaft auswählen"
-          variant="outlined"
-          no-filter
-          return-object
-          @update:model-value="onTeamSelected"
-        >
-          <template #item="{ props: itemProps, item }">
-            <v-list-item
-              v-bind="itemProps"
-              :title="item.team_name"
-              :subtitle="item.league_name"
-            />
-          </template>
-          <template #no-data>
-            <v-list-item>
-              <v-list-item-title>Keine Mannschaften gefunden</v-list-item-title>
-            </v-list-item>
-          </template>
-        </v-select>
-      </v-col>
-    </v-row>
-    <v-divider />
-    <v-row>
-      <v-col cols="12">
-        <v-data-table :headers="meetingHeaders" :items="meetings" hide-default-footer>
-          <template #item.live="{ item }">
-            <v-chip
-                v-if="item.live"
-                color="red"
-                size="small"
-                variant="flat"
+  <v-container fluid class="fill-height d-flex flex-column">
+    <v-card class="mb-4">
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" md="6">
+            <v-autocomplete
+                v-model="selectedClub"
+                v-model:search="search"
+                :items="clubs"
+                :loading="loading"
+                item-title="clubname"
+                item-value="clubnr"
+                label="Verein wählen"
+                variant="outlined"
+                clearable
+                no-filter
+                return-object
             >
-              LIVE
-            </v-chip>
+              <template #item="{ props: itemProps, item }">
+                <v-list-item
+                    v-model="item.clubnr"
+                    v-bind="itemProps"
+                    :title="item.clubname"
+                    :subtitle="item.organization_short"
+                />
+              </template>
+              <template #no-data>
+                <v-list-item>
+                  <v-list-item-title>Keine Vereine gefunden</v-list-item-title>
+                </v-list-item>
+              </template>
+            </v-autocomplete>
+          </v-col>
 
-            <v-icon
-                v-else-if="item.is_match_completed"
-                color="green"
-                icon="mdi-check-circle"
-            />
+          <v-col cols="12" md="6">
+            <v-select
+                v-model="selectedTeam"
+                :disabled="!selectedClub"
+                :items="teams"
+                item-title="team_name"
+                item-value="team_id"
+                label="Mannschaft wählen"
+                variant="outlined"
+                no-filter
+                return-object
+                @update:model-value="onTeamSelected"
+            >
+              <template #item="{ props: itemProps, item }">
+                <v-list-item
+                    v-bind="itemProps"
+                    :title="item.team_name"
+                    :subtitle="item.league_name"
+                />
+              </template>
+              <template #no-data>
+                <v-list-item>
+                  <v-list-item-title>Zuerst Verein wählen</v-list-item-title>
+                </v-list-item>
+              </template>
+            </v-select>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+    <v-divider />
+    <div class="table-wrapper">
+      <div v-if="scheduleLoading" ref="sentinel" class="pa-2 text-center">
+        <v-progress-circular indeterminate size="20" color="primary" />
+      </div>
+      <v-data-table
+          v-else
+          :headers="meetingHeaders"
+          :items="meetings"
+          :items-per-page="-1"
+          no-data-text="Keine Spiele vorhanden!"
+          fixed-header
+          height="100%"
+          hide-default-footer
+      >
+        <template #item.live="{ item }">
+          <v-chip v-if="item.live" color="red" size="small" variant="flat">
+            LIVE
+          </v-chip>
 
-            <v-icon
-                v-else
-                color="grey"
-                icon="mdi-clock-outline"
-            />
-          </template>
-        </v-data-table>
-      </v-col>
-    </v-row>
+          <v-icon
+              v-else-if="item.is_match_completed"
+              color="green"
+              icon="mdi-check-circle"
+          />
+
+          <v-icon v-else color="grey" icon="mdi-clock-outline" />
+        </template>
+      </v-data-table>
+    </div>
   </v-container>
 </template>
 
-<style scoped>
+<style>
+.v-input__details {
+  display: none;
+}
+
 .fill-height {
-  min-height: 100vh;
+  height: 100vh;
+}
+
+.table-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 </style>
