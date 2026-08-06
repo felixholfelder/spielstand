@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: "home",
+});
+
 import { formatDate } from "~/composables/useDateUtils.ts";
 
 interface Club {
