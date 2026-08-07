@@ -39,7 +39,7 @@ onMounted(async () => {
 
 <template>
   <v-container fluid class="fill-height d-flex flex-column">
-    <v-row align="center" no-gutters>
+    <v-row align="center" no-gutters @click="loadMeeting">
       <v-col class="text-center">
         <div class="games-count">{{liveMeeting?.games_home}}</div>
         <div class="team">{{ liveMeeting?.team_home }}</div>

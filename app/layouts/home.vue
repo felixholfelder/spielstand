@@ -6,7 +6,7 @@ const theme = useTheme();
 const isDark = ref(theme.global.name.value === "dark");
 
 function toggleTheme() {
-  theme.global.name.value = isDark.value ? "dark" : "light";
+  theme.global.name.value = theme.global.name.value === 'light' ? 'dark' : 'light'
   if (import.meta.client) {
     localStorage.setItem("theme", theme.global.name.value);
   }
@@ -30,14 +30,18 @@ onMounted(() => {
 
       <v-spacer />
 
-      <v-switch
-          v-model="isDark"
-          label="Dark Mode"
-          hide-details
-          density="compact"
-          class="mr-4"
-          @update:model-value="toggleTheme"
-      />
+      <v-btn
+          icon
+          @click="toggleTheme"
+      >
+        <v-icon>
+          {{
+            theme.global.name.value === 'dark'
+                ? 'mdi-weather-sunny'
+                : 'mdi-weather-night'
+          }}
+        </v-icon>
+      </v-btn>
     </v-app-bar>
 
     <v-main>
