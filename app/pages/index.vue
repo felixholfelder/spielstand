@@ -28,6 +28,8 @@ interface Meeting {
   live: boolean;
   team_home: string;
   team_away: string;
+  team_home_id: string;
+  team_away_id: string;
   meeting_id: string;
   is_meeting_completed: string;
 }
@@ -78,8 +80,8 @@ const meetingHeaders = [
     key: "date",
     value: (item: Meeting) => formatDate(item.date),
   },
-  { title: "Heim-Mannschaft", value: "team_home" },
-  { title: "Auswährts-Mannschaft", value: "team_away" },
+  { title: "Heim", value: "team_home" },
+  { title: "Gast", value: "team_away" },
 ];
 
 const STORAGE_KEY_CLUB = "selectedClub";
@@ -269,6 +271,7 @@ watch(selectedClub, async (club) => {
               item-value="team_id"
               label="Mannschaft wählen"
               variant="outlined"
+              dense
               no-filter
               return-object
               @update:model-value="onTeamSelected"
@@ -319,6 +322,12 @@ watch(selectedClub, async (club) => {
 
           <v-icon v-else color="grey" icon="mdi-clock-outline" />
         </template>
+        <template #item.team_home="{ item }">
+          <div :class="{'font-weight-bold': item.team_home_id == selectedTeam?.team_id}">{{ item.team_home }}</div>
+        </template>
+        <template #item.team_away="{ item }">
+          <div :class="{'font-weight-bold': item.team_away_id == selectedTeam?.team_id}">{{ item.team_away }}</div>
+        </template>
       </v-data-table>
     </div>
   </v-container>
@@ -336,6 +345,5 @@ watch(selectedClub, async (club) => {
 .table-wrapper {
   flex: 1;
   min-height: 0;
-  overflow: auto;
 }
 </style>
