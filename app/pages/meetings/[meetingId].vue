@@ -45,7 +45,7 @@ onMounted(async () => {
         <div class="team">{{ liveMeeting?.team_home }}</div>
       </v-col>
 
-      <v-divider vertical />
+      <v-divider vertical :thickness="3" class="border-opacity-100" gradient />
 
       <v-col class="text-center">
         <div class="games-count">{{ liveMeeting?.games_guest }}</div>
@@ -56,11 +56,24 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.v-row {
+  cursor: pointer;
+  min-height: 100vh; /* volle Höhe für große Touch-Fläche */
+}
+
 .games-count {
-  font-size: 256px;
+  font-size: clamp(200px, 50vw, 260px);
+  font-weight: 700;
+  line-height: 1;
 }
 
 .team {
-  font-size: 18px;
+  /* Verhindert Textumbruch bei langen Vereinsnamen, ggf. mit Ellipsis */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+  margin: 0 auto;
+  font-size: clamp(20px, 3vw, 260px);
 }
 </style>
