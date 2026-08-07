@@ -1,18 +1,9 @@
 <script setup lang="ts">
+import type {LiveMeeting, LiveMeetingsResponse} from "~/models/live-meeting";
+
 const route = useRoute();
 
 const liveMeeting = ref<LiveMeeting>();
-
-interface LiveMeeting {
-  team_home: string;
-  team_guest: string;
-  games_home: number;
-  games_guest: number;
-}
-
-interface LiveMeetingsResponse {
-  data: LiveMeeting;
-}
 
 async function loadMeeting() {
   const meetingId = route.params.meetingId;
@@ -58,7 +49,7 @@ onMounted(async () => {
 <style scoped>
 .v-row {
   cursor: pointer;
-  min-height: 100vh; /* volle Höhe für große Touch-Fläche */
+  min-height: 100vh;
 }
 
 .games-count {
@@ -68,7 +59,6 @@ onMounted(async () => {
 }
 
 .team {
-  /* Verhindert Textumbruch bei langen Vereinsnamen, ggf. mit Ellipsis */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
