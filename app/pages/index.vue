@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { formatDate } from "~/composables/useDateUtils.ts";
+
 definePageMeta({
   layout: "home",
 });
-
-import { formatDate } from "~/composables/useDateUtils.ts";
 
 interface Club {
   external_id: string;
@@ -54,8 +54,6 @@ interface MeetingGroup {
 
 interface MeetingsResponse {
   data: {
-    table: {};
-    head_infos: {};
     meetings_excerpt: {
       meetings: MeetingGroup[];
     };
@@ -165,8 +163,8 @@ async function restoreFromSession() {
   }
 }
 
-function onMeetingClick(_: any, item: {item: Meeting}) {
-  router.push(`/meetings/${item.item.meeting_id}`)
+function onMeetingClick(_: any, item: { item: Meeting }) {
+  router.push(`/meetings/${item.item.meeting_id}`);
 }
 
 onMounted(async () => {
@@ -234,24 +232,24 @@ watch(selectedClub, async (club) => {
         <v-row>
           <v-col cols="12" md="6">
             <v-autocomplete
-                v-model="selectedClub"
-                v-model:search="search"
-                :items="clubs"
-                :loading="loading"
-                item-title="clubname"
-                item-value="clubnr"
-                label="Verein wählen"
-                variant="outlined"
-                clearable
-                no-filter
-                return-object
+              v-model="selectedClub"
+              v-model:search="search"
+              :items="clubs"
+              :loading="loading"
+              item-title="clubname"
+              item-value="clubnr"
+              label="Verein wählen"
+              variant="outlined"
+              clearable
+              no-filter
+              return-object
             >
               <template #item="{ props: itemProps, item }">
                 <v-list-item
-                    v-model="item.clubnr"
-                    v-bind="itemProps"
-                    :title="item.clubname"
-                    :subtitle="item.organization_short"
+                  v-model="item.clubnr"
+                  v-bind="itemProps"
+                  :title="item.clubname"
+                  :subtitle="item.organization_short"
                 />
               </template>
               <template #no-data>
@@ -264,22 +262,22 @@ watch(selectedClub, async (club) => {
 
           <v-col cols="12" md="6">
             <v-select
-                v-model="selectedTeam"
-                :disabled="!selectedClub"
-                :items="teams"
-                item-title="team_name"
-                item-value="team_id"
-                label="Mannschaft wählen"
-                variant="outlined"
-                no-filter
-                return-object
-                @update:model-value="onTeamSelected"
+              v-model="selectedTeam"
+              :disabled="!selectedClub"
+              :items="teams"
+              item-title="team_name"
+              item-value="team_id"
+              label="Mannschaft wählen"
+              variant="outlined"
+              no-filter
+              return-object
+              @update:model-value="onTeamSelected"
             >
               <template #item="{ props: itemProps, item }">
                 <v-list-item
-                    v-bind="itemProps"
-                    :title="item.team_name"
-                    :subtitle="item.league_name"
+                  v-bind="itemProps"
+                  :title="item.team_name"
+                  :subtitle="item.league_name"
                 />
               </template>
               <template #no-data>
@@ -298,15 +296,15 @@ watch(selectedClub, async (club) => {
         <v-progress-circular indeterminate size="20" color="primary" />
       </div>
       <v-data-table
-          v-else
-          :headers="meetingHeaders"
-          :items="meetings"
-          :items-per-page="-1"
-          no-data-text="Keine Spiele vorhanden!"
-          fixed-header
-          height="100%"
-          hide-default-footer
-          @click:row="onMeetingClick"
+        v-else
+        :headers="meetingHeaders"
+        :items="meetings"
+        :items-per-page="-1"
+        no-data-text="Keine Spiele vorhanden!"
+        fixed-header
+        height="100%"
+        hide-default-footer
+        @click:row="onMeetingClick"
       >
         <template #item.live="{ item }">
           <v-chip v-if="item.live" color="red" size="small" variant="flat">
@@ -314,9 +312,9 @@ watch(selectedClub, async (club) => {
           </v-chip>
 
           <v-icon
-              v-else-if="item.is_meeting_completed"
-              color="green"
-              icon="mdi-check-circle"
+            v-else-if="item.is_meeting_completed"
+            color="green"
+            icon="mdi-check-circle"
           />
 
           <v-icon v-else color="grey" icon="mdi-clock-outline" />

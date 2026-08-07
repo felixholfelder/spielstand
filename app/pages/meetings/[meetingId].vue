@@ -1,7 +1,7 @@
 <script setup lang="ts">
-const route = useRoute()
+const route = useRoute();
 
-const liveMeeting = ref<LiveMeeting>()
+const liveMeeting = ref<LiveMeeting>();
 
 interface LiveMeeting {
   team_home: string;
@@ -15,7 +15,7 @@ interface LiveMeetingsResponse {
 }
 
 async function loadMeeting() {
-  const meetingId = route.params.meetingId
+  const meetingId = route.params.meetingId;
 
   try {
     const res = await $fetch<LiveMeetingsResponse>("/api/meetings", {
@@ -24,7 +24,7 @@ async function loadMeeting() {
       },
     });
 
-    liveMeeting.value = res.data
+    liveMeeting.value = res.data;
   } catch (error) {
     console.error(error);
   }
@@ -34,14 +34,14 @@ onMounted(async () => {
   await loadMeeting();
 
   setInterval(async () => await loadMeeting(), 60 * 1000);
-})
+});
 </script>
 
 <template>
   <v-container fluid class="fill-height d-flex flex-column">
     <v-row align="center" no-gutters @click="loadMeeting">
       <v-col class="text-center">
-        <div class="games-count">{{liveMeeting?.games_home}}</div>
+        <div class="games-count">{{ liveMeeting?.games_home }}</div>
         <div class="team">{{ liveMeeting?.team_home }}</div>
       </v-col>
 
