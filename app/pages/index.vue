@@ -1,66 +1,12 @@
 <script setup lang="ts">
 import { formatDate } from "~/composables/useDateUtils.ts";
+import type { Club, ClubsResponse } from "~/models/club";
+import type { Team, TeamsResponse } from "~/models/team.ts";
+import type { Meeting, MeetingsResponse } from "~/models/meeting.ts";
 
 definePageMeta({
   layout: "home",
 });
-
-interface Club {
-  external_id: string;
-  clubname: string;
-  clubnr: string;
-  organization_id: number;
-  organization_name: string;
-  organization_short: string;
-}
-
-interface Team {
-  season: string;
-  team_id: string;
-  team_name: string;
-  group_id: string;
-  league_name: string;
-  team_organisation_short: string;
-}
-
-interface Meeting {
-  date: string;
-  live: boolean;
-  team_home: string;
-  team_away: string;
-  team_home_id: string;
-  team_away_id: string;
-  meeting_id: string;
-  is_meeting_completed: string;
-}
-
-interface ClubsResponse {
-  results: Club[];
-  total_count: number;
-  pages_count: number;
-  page: number;
-  pagesize: number;
-}
-
-interface TeamsResponse {
-  data: {
-    teams_list: {
-      club_teams: Team[];
-    };
-  };
-}
-
-interface MeetingGroup {
-  [date: string]: Meeting[];
-}
-
-interface MeetingsResponse {
-  data: {
-    meetings_excerpt: {
-      meetings: MeetingGroup[];
-    };
-  };
-}
 
 const router = useRouter();
 const search = ref("");
@@ -323,10 +269,22 @@ watch(selectedClub, async (club) => {
           <v-icon v-else color="grey" icon="mdi-clock-outline" />
         </template>
         <template #item.team_home="{ item }">
-          <div :class="{'font-weight-bold': item.team_home_id == selectedTeam?.team_id}">{{ item.team_home }}</div>
+          <div
+            :class="{
+              'font-weight-bold': item.team_home_id == selectedTeam?.team_id,
+            }"
+          >
+            {{ item.team_home }}
+          </div>
         </template>
         <template #item.team_away="{ item }">
-          <div :class="{'font-weight-bold': item.team_away_id == selectedTeam?.team_id}">{{ item.team_away }}</div>
+          <div
+            :class="{
+              'font-weight-bold': item.team_away_id == selectedTeam?.team_id,
+            }"
+          >
+            {{ item.team_away }}
+          </div>
         </template>
       </v-data-table>
     </div>
