@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {LiveMeeting, LiveMeetingsResponse} from "~/models/live-meeting";
+import type { LiveMeeting, LiveMeetingsResponse } from "~/models/live-meeting";
 
 const route = useRoute();
 

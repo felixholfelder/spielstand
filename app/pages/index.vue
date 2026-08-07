@@ -1,34 +1,26 @@
 <script setup lang="ts">
-import { formatDate } from "~/composables/useDateUtils.ts";
 import type { Club, ClubsResponse } from "~/models/club";
 import type { Team, TeamsResponse } from "~/models/team.ts";
-import type { Meeting, MeetingsResponse } from "~/models/meeting.ts";
+import type {
+  Meeting,
+  MeetingGroup,
+  MeetingsResponse,
+} from "~/models/meeting.ts";
+import { RoundType } from "~/enums/round-type.ts";
 
 definePageMeta({
   layout: "home",
 });
 
-const router = useRouter();
 const search = ref("");
 const clubs = ref<Club[]>([]);
 const selectedClub = ref<Club>();
 const teams = ref<Team[]>([]);
 const meetings = ref<Meeting[]>([]);
-const selectedTeam = ref<Team | null>();
+const selectedTeam = ref<Team>();
 const page = ref(1);
-const totalPages = ref(1);
-const loading = ref(false);
+const clubsLoading = ref(false);
 const scheduleLoading = ref(false);
-const meetingHeaders = [
-  { title: "Live", value: "live" },
-  {
-    title: "Datum",
-    key: "date",
-    value: (item: Meeting) => formatDate(item.date),
-  },
-  { title: "Heim", value: "team_home" },
-  { title: "Gast", value: "team_away" },
-];
 
 const STORAGE_KEY_CLUB = "selectedClub";
 const STORAGE_KEY_TEAM = "selectedTeam";
@@ -44,9 +36,8 @@ async function fetchClubs() {
     res.results = res.results.filter((e) => e.clubname !== "-kein-club-");
 
     clubs.value = res.results;
-    totalPages.value = res.pages_count;
   } finally {
-    loading.value = false;
+    clubsLoading.value = false;
   }
 }
 
@@ -83,6 +74,32 @@ async function onTeamSelected() {
     console.error(error);
   }
   scheduleLoading.value = false;
+
+  if (restoring) return;
+  if (!selectedTeam.value) {
+    sessionStorage.removeItem(STORAGE_KEY_TEAM);
+    return;
+  }
+  sessionStorage.setItem(STORAGE_KEY_TEAM, JSON.stringify(selectedTeam.value));
+}
+
+async function onClubSelected() {
+  if (restoring) return;
+
+  selectedTeam.value = undefined;
+  meetings.value = [];
+
+  if (!selectedClub.value) {
+    teams.value = [];
+    sessionStorage.removeItem(STORAGE_KEY_CLUB);
+    sessionStorage.removeItem(STORAGE_KEY_TEAM);
+    return;
+  }
+
+  sessionStorage.setItem(STORAGE_KEY_CLUB, JSON.stringify(selectedClub.value));
+  sessionStorage.removeItem(STORAGE_KEY_TEAM);
+
+  await fetchTeams();
 }
 
 async function restoreFromSession() {
@@ -111,66 +128,76 @@ async function restoreFromSession() {
   }
 }
 
-function onMeetingClick(_: any, item: { item: Meeting }) {
-  router.push(`/meetings/${item.item.meeting_id}`);
-}
-
 onMounted(async () => {
   await fetchClubs();
   await restoreFromSession();
+});
+
+const activeRound = computed<string | undefined>(() => {
+  if (meetings.value.length === 0) return undefined;
+
+  const now = new Date();
+  const isSameDay = (date: Date) =>
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate();
+
+  const todaysMeeting = meetings.value.find((m) => isSameDay(new Date(m.date)));
+
+  if (todaysMeeting) {
+    return todaysMeeting.round_type;
+  }
+
+  const pastMeetings = meetings.value
+    .filter((m) => new Date(m.date).getTime() < now.getTime())
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  if (pastMeetings.length > 0) {
+    return pastMeetings[0].round_type;
+  }
+
+  const futureMeetings = [...meetings.value].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+
+  return futureMeetings[0]?.round_type;
+});
+
+const groupedByRound = computed<MeetingGroup[]>(() => {
+  const groups = new Map<string, Meeting[]>();
+
+  for (const meeting of meetings.value) {
+    const key = meeting.round_type;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(meeting);
+  }
+
+  return Array.from(groups.entries()).map(([roundType, meetings]) => ({
+    roundType,
+    meetings,
+  }));
 });
 
 let debounceTimer: ReturnType<typeof setTimeout>;
 
 watch(search, () => {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => fetchClubs(), 300);
+  debounceTimer = setTimeout(async () => await fetchClubs(), 300);
 });
 
-watch(selectedClub, async (club) => {
-  if (restoring) return;
+const selectedRoundTab = ref<string>();
 
-  selectedTeam.value = null;
-  meetings.value = [];
-
-  if (!club) {
-    teams.value = [];
-    sessionStorage.removeItem(STORAGE_KEY_CLUB);
-    sessionStorage.removeItem(STORAGE_KEY_TEAM);
-    return;
-  }
-
-  sessionStorage.setItem(STORAGE_KEY_CLUB, JSON.stringify(club));
-  sessionStorage.removeItem(STORAGE_KEY_TEAM);
-
-  await fetchTeams();
-});
-
-watch(selectedTeam, (team) => {
-  if (restoring) return;
-
-  if (!team) {
-    sessionStorage.removeItem(STORAGE_KEY_TEAM);
-    return;
-  }
-
-  sessionStorage.setItem(STORAGE_KEY_TEAM, JSON.stringify(team));
-});
-
-watch(search, () => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => fetchClubs(), 300);
-});
-
-watch(selectedClub, async (club) => {
-  selectedTeam.value = null;
-  if (!club) {
-    teams.value = [];
-    return;
-  }
-
-  await fetchTeams();
-});
+watch(
+  activeRound,
+  (val) => {
+    if (val !== undefined) {
+      selectedRoundTab.value = val;
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -183,7 +210,7 @@ watch(selectedClub, async (club) => {
               v-model="selectedClub"
               v-model:search="search"
               :items="clubs"
-              :loading="loading"
+              :loading="clubsLoading"
               item-title="clubname"
               item-value="clubnr"
               label="Verein wählen"
@@ -191,6 +218,7 @@ watch(selectedClub, async (club) => {
               clearable
               no-filter
               return-object
+              @update:model-value="onClubSelected"
             >
               <template #item="{ props: itemProps, item }">
                 <v-list-item
@@ -231,7 +259,9 @@ watch(selectedClub, async (club) => {
               </template>
               <template #no-data>
                 <v-list-item>
-                  <v-list-item-title>Zuerst Verein wählen</v-list-item-title>
+                  <v-list-item-title
+                    >Keine Mannschaften gefunden</v-list-item-title
+                  >
                 </v-list-item>
               </template>
             </v-select>
@@ -241,52 +271,33 @@ watch(selectedClub, async (club) => {
     </v-card>
     <v-divider />
     <div class="table-wrapper">
+      <v-tabs v-model="selectedRoundTab">
+        <v-tab
+          v-for="group in groupedByRound"
+          :key="group.roundType"
+          :value="group.roundType"
+        >
+          {{ RoundType[group.roundType] }}
+        </v-tab>
+      </v-tabs>
+
       <div v-if="scheduleLoading" ref="sentinel" class="pa-2 text-center">
-        <v-progress-circular indeterminate size="20" color="primary" />
+        <v-progress-circular indeterminate color="primary" />
       </div>
-      <v-data-table
-        v-else
-        :headers="meetingHeaders"
-        :items="meetings"
-        :items-per-page="-1"
-        no-data-text="Keine Spiele vorhanden!"
-        fixed-header
-        height="100%"
-        hide-default-footer
-        @click:row="onMeetingClick"
-      >
-        <template #item.live="{ item }">
-          <v-chip v-if="item.live" color="red" size="small" variant="flat">
-            LIVE
-          </v-chip>
-
-          <v-icon
-            v-else-if="item.is_meeting_completed"
-            color="green"
-            icon="mdi-check-circle"
+      <v-tabs-window v-model="selectedRoundTab">
+        <v-tabs-window-item
+          v-for="group in groupedByRound"
+          :key="group.roundType"
+          :value="group.roundType"
+        >
+          <meeting-table
+            v-if="!scheduleLoading"
+            :meetings="group.meetings"
+            :selected-club="selectedClub"
+            :selected-team="selectedTeam"
           />
-
-          <v-icon v-else color="grey" icon="mdi-clock-outline" />
-        </template>
-        <template #item.team_home="{ item }">
-          <div
-            :class="{
-              'font-weight-bold': item.team_home_id == selectedTeam?.team_id,
-            }"
-          >
-            {{ item.team_home }}
-          </div>
-        </template>
-        <template #item.team_away="{ item }">
-          <div
-            :class="{
-              'font-weight-bold': item.team_away_id == selectedTeam?.team_id,
-            }"
-          >
-            {{ item.team_away }}
-          </div>
-        </template>
-      </v-data-table>
+        </v-tabs-window-item>
+      </v-tabs-window>
     </div>
   </v-container>
 </template>
