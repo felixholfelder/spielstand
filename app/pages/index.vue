@@ -153,7 +153,7 @@ const activeRound = computed<string | undefined>(() => {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   if (pastMeetings.length > 0) {
-    return pastMeetings[0].round_type;
+    return pastMeetings[0]!.round_type;
   }
 
   const futureMeetings = [...meetings.value].sort(
@@ -189,15 +189,11 @@ watch(search, () => {
 
 const selectedRoundTab = ref<string>();
 
-watch(
-  activeRound,
-  (val) => {
-    if (val !== undefined) {
-      selectedRoundTab.value = val;
-    }
-  },
-  { immediate: true },
-);
+watch(activeRound, (val) => {
+  if (val !== undefined) {
+    selectedRoundTab.value = val;
+  }
+});
 </script>
 
 <template>
@@ -277,7 +273,7 @@ watch(
           :key="group.roundType"
           :value="group.roundType"
         >
-          {{ RoundType[group.roundType] }}
+          {{ RoundType[parseInt(group.roundType)] }}
         </v-tab>
       </v-tabs>
 
