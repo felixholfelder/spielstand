@@ -16,6 +16,7 @@ onMounted(() => {
 <template>
   <v-app>
     <v-main>
+      <v-icon-btn icon="mdi-arrow-left" @click="$router.back()" />
       <slot />
     </v-main>
   </v-app>
