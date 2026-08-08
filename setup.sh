@@ -54,28 +54,29 @@ run_step() {
 }
 
 set_project_path() {
-  ENV_PATH="/etc/environment"
-  current_path=$(pwd)
+  local ENV_PATH="/etc/environment"
+  local current_path
 
-  if [[ "$current_path" != *Retro* ]]; then
+  current_path="$(pwd)"
+
+  if [[ "$current_path" != *spielstand* ]]; then
     error "FEHLGESCHLAGEN"
-    echo "Du befindest dich im falschen Pfad. Wechsle zuerst in das \"Retro.I\" Verzeichnis" >&2
+    echo "Du befindest dich im falschen Pfad. Wechsle zuerst in das \"spielstand\" Verzeichnis" >&2
     exit 1
   fi
 
   export PROJ_DIR="$current_path"
 
-  sudo tee "$ENV_PATH" > /dev/null <<EOF
-PROJ_DIR="$current_path"
-EOF
+  sudo sed -i '/^PROJ_DIR=/d' "$ENV_PATH"
 
-  source "$ENV_PATH"
+  echo "PROJ_DIR=\"$current_path\"" | sudo tee -a "$ENV_PATH" > /dev/null
 
-  if [ -z "$PROJ_DIR" ]; then
+  if ! grep -q "^PROJ_DIR=" "$ENV_PATH"; then
     error "FEHLGESCHLAGEN"
-    echo "Pfad-Variablen konnten nicht gesetzt werden" >&2
+    echo "PROJ_DIR konnte nicht in $ENV_PATH geschrieben werden" >&2
     return 1
   fi
+}
 
 remove_splashscreen() {
   firmware_config_path="/boot/firmware/config.txt"
@@ -220,15 +221,13 @@ print_ascii_art
 echo -e "Sollte dieses Setup-Script bei einem Schritt fehlschlagen, ja... dann keine Ahnung...\n\n"
 read -p "Drücke <ENTER> um das Setup zu beginnen..."
 
-run_step "Projektpfad setzen" set_project_path
+set_project_path
 run_step "Entferne Splashscreen" remove_splashscreen
 run_step "System-Splashscreen ändern" sudo -E bash -c "$PROJ_DIR/scripts/update_system_splash.sh"
 run_step "Systemd-Datei für Systemstart erstellen" create_systemd_service
-#run_step "Taskbar ausblenden" hide_taskbar
 run_step "Mülleimer entfernen" remove_trash_basket
 run_step "Aktiviere SSH" sudo raspi-config nonint do_ssh 0
 run_step "Aktiviere VNC" sudo raspi-config nonint do_vnc 0
-run_step "Aktiviere SPI" sudo raspi-config nonint do_spi 0
 run_step "Deaktiviere unnötige Services" deactivate_services
 run_step "Installiere Bildschirmtastatur" install_screen_keyboard
 
