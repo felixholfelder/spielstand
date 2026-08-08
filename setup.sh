@@ -97,7 +97,7 @@ remove_splashscreen() {
 }
 
 create_systemd_service() {
-  systemd_path="/etc/systemd/system/spielstand.service"
+  systemd_path="/etc/systemd/user/spielstand.service"
 
   user_id=$(id -u)
   username=$(whoami)
@@ -105,25 +105,17 @@ create_systemd_service() {
   sudo tee "$systemd_path" > /dev/null <<EOF
 [Unit]
 Description=Spielstand Web-App opener
-After=graphical.target
+After=graphical-session.target
+PartOf=graphical-session.target
 
 [Service]
 Type=simple
-User=$username
-Group=$username
 WorkingDirectory=$PROJ_DIR
 ExecStart=$PROJ_DIR/scripts/start.sh
 Restart=on-failure
-Environment=DISPLAY=:0
-Environment=XAUTHORITY=/home/$username/.Xauthority
-Environment=XDG_RUNTIME_DIR=/run/user/$user_id
-Environment=PULSE_SERVER=unix:/run/user/$user_id/pulse/native
-TimeoutStopSec=1
-KillSignal=SIGKILL
-KillMode=control-group
 
 [Install]
-WantedBy=graphical.target
+WantedBy=default.target
 EOF
 
   # Verify creation
@@ -132,7 +124,9 @@ EOF
     return 1
   fi
 
-  sudo systemctl enable spielstand.service
+  systemctl enable --user daemon-reload
+  systemctl enable --user enable spielstand.service
+  systemctl enable --user spielstand.service
 }
 
 hide_taskbar() {
@@ -206,12 +200,12 @@ install_screen_keyboard() {
 
 print_ascii_art() {
   echo "
- __       _      _     _                  _
-/ _\_ __ (_) ___| |___| |_ __ _ _ __   __| |
-\ \| '_ \| |/ _ \ / __| __/ _  | '_ \ / _  |
-_\ \ |_) | |  __/ \__ \ || (_| | | | | (_| |
-\__/ .__/|_|\___|_|___/\__\__,_|_| |_|\__,_|
-   |_|
+  __       _      _     _                  _
+ / _\_ __ (_) ___| |___| |_ __ _ _ __   __| |
+ \ \| '_ \| |/ _ \ / __| __/ _  | '_ \ / _  |
+ _\ \ |_) | |  __/ \__ \ || (_| | | | | (_| |
+ \__/ .__/|_|\___|_|___/\__\__,_|_| |_|\__,_|
+    |_|
 "
 }
 
@@ -228,6 +222,7 @@ run_step "Systemd-Datei für Systemstart erstellen" create_systemd_service
 run_step "Mülleimer entfernen" remove_trash_basket
 run_step "Aktiviere SSH" sudo raspi-config nonint do_ssh 0
 run_step "Aktiviere VNC" sudo raspi-config nonint do_vnc 0
+run_step "Aktiviere SPI" sudo raspi-config nonint do_spi 0
 run_step "Deaktiviere unnötige Services" deactivate_services
 run_step "Installiere Bildschirmtastatur" install_screen_keyboard
 
