@@ -2,6 +2,7 @@
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
+const route = useRoute()
 
 const isDark = ref(theme.global.name.value === "dark");
 
@@ -40,7 +41,8 @@ onMounted(() => {
           }}
         </v-icon>
       </v-btn>
-      <btn-shutdown></btn-shutdown>
+
+      <btn-shutdown v-if="route.query.platform == 'raspberry'" />
     </v-app-bar>
 
     <v-main>

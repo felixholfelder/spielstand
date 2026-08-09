@@ -7,4 +7,4 @@ chromium \
   --no-first-run \
   --start-maximized \
   --password-store=basic \
-  --app="https://spielstand.holfelder.cloud"
+  --app="https://spielstand.holfelder.cloud?platform=raspberry"
