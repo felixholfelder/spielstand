@@ -6,6 +6,12 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ["@nuxt/eslint"],
 
+  app: {
+    head: {
+      title: "Spielstand",
+    },
+  },
+
   runtimeConfig: {
     public: {
       baseApiUrl: "https://www.mytischtennis.de",
