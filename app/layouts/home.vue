@@ -40,6 +40,7 @@ onMounted(() => {
           }}
         </v-icon>
       </v-btn>
+      <btn-shutdown></btn-shutdown>
     </v-app-bar>
 
     <v-main>
