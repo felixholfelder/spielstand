@@ -16,11 +16,11 @@ function toggleTheme() {
 }
 
 async function callShutdown() {
-  await fetch("http://localhost:5005/shutdown");
+  await fetch("http://localhost:5005/shutdown", { method: "POST" });
 }
 
 async function callReboot() {
-  await fetch("http://localhost:5005/reboot");
+  await fetch("http://localhost:5005/reboot", { method: "POST" });
 }
 
 onMounted(() => {
