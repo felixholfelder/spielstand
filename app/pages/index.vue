@@ -77,10 +77,10 @@ async function onTeamSelected() {
 
   if (restoring) return;
   if (!selectedTeam.value) {
-    sessionStorage.removeItem(STORAGE_KEY_TEAM);
+    localStorage.removeItem(STORAGE_KEY_TEAM);
     return;
   }
-  sessionStorage.setItem(STORAGE_KEY_TEAM, JSON.stringify(selectedTeam.value));
+  localStorage.setItem(STORAGE_KEY_TEAM, JSON.stringify(selectedTeam.value));
 }
 
 async function onClubSelected() {
@@ -91,13 +91,13 @@ async function onClubSelected() {
 
   if (!selectedClub.value) {
     teams.value = [];
-    sessionStorage.removeItem(STORAGE_KEY_CLUB);
-    sessionStorage.removeItem(STORAGE_KEY_TEAM);
+    localStorage.removeItem(STORAGE_KEY_CLUB);
+    localStorage.removeItem(STORAGE_KEY_TEAM);
     return;
   }
 
-  sessionStorage.setItem(STORAGE_KEY_CLUB, JSON.stringify(selectedClub.value));
-  sessionStorage.removeItem(STORAGE_KEY_TEAM);
+  localStorage.setItem(STORAGE_KEY_CLUB, JSON.stringify(selectedClub.value));
+  localStorage.removeItem(STORAGE_KEY_TEAM);
 
   await fetchTeams();
 }
@@ -105,8 +105,8 @@ async function onClubSelected() {
 async function restoreFromSession() {
   if (!import.meta.client) return;
 
-  const savedClub = sessionStorage.getItem(STORAGE_KEY_CLUB);
-  const savedTeam = sessionStorage.getItem(STORAGE_KEY_TEAM);
+  const savedClub = localStorage.getItem(STORAGE_KEY_CLUB);
+  const savedTeam = localStorage.getItem(STORAGE_KEY_TEAM);
 
   if (!savedClub) return;
 
