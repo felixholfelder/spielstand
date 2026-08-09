@@ -222,6 +222,44 @@ install_screen_keyboard() {
   sudo apt-get install squeekboard -y -qqq
 }
 
+setup_shutdown_service() {
+  target="~/shutdown-service/"
+  mkdir -p "$target"
+  cp "$PROJ_DIR/shutdown-service/server.js" "$target"
+  cp "$PROJ_DIR/shutdown-service/package.json" "$target"
+
+  # TODO - das ganze in Docker Container umwandeln?
+  cd "$target"
+  sudo apt-get install nodejs -y
+  npm install
+
+  sudo tee "/etc/sudoers.d/shutdown-button" > /dev/null <<EOF
+spielstand ALL=(ALL) NOPASSWD: /sbin/shutdown
+EOF
+
+  username=$(whoami)
+
+  sudo tee "/etc/systemd/system/shutdown-service.service" > /dev/null <<EOF
+[Unit]
+Description=Lokaler Shutdown-Service fuer Kiosk-Button
+After=network.target
+
+[Service]
+Type=simple
+User=$username
+WorkingDirectory=$PROJ_DIR/shutdown-service
+ExecStart=/usr/bin/node $HOME/shutdown-service/server.js
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now shutdown-service
+}
+
 print_ascii_art() {
   echo "
   __       _      _     _                  _
@@ -251,6 +289,7 @@ run_step "Aktiviere VNC" sudo raspi-config nonint do_vnc 0
 run_step "Aktiviere SPI" sudo raspi-config nonint do_spi 0
 run_step "Deaktiviere unnötige Services" deactivate_services
 run_step "Installiere Bildschirmtastatur" install_screen_keyboard
+run_step "Setup: Shutdown-service" setup_shutdown_service
 
 success "Setup erfolgreich abgeschlossen!\n\n"
 
