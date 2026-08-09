@@ -7,4 +7,5 @@ chromium \
   --disable-infobars \
   --no-first-run \
   --start-maximized \
+  --password-store=basic \
   "https://spielstand.holfelder.cloud"
