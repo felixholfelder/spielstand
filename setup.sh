@@ -280,8 +280,8 @@ read -p "Drücke <ENTER> um das Setup zu beginnen..."
 set_project_path
 run_step "Taskbar ausblenden" hide_taskbar
 run_step "Entferne Splashscreen" remove_splashscreen
-run_step "Desktop Wallpaper ändern" sudo -E bash -c "$PROJ_DIR/scripts/set_wallpaper.sh"
 run_step "System-Splashscreen ändern" sudo -E bash -c "$PROJ_DIR/scripts/update_system_splash.sh -s $PROJ_DIR/public/splashscreen_90.png"
+run_step "Desktop Wallpaper ändern" sudo -E bash -c "$PROJ_DIR/scripts/set_wallpaper.sh"
 run_step "Systemd-Datei für Systemstart erstellen" create_systemd_service
 run_step "Mülleimer entfernen" remove_trash_basket
 run_step "Aktiviere SSH" sudo raspi-config nonint do_ssh 0
