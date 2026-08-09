@@ -113,10 +113,6 @@ remove_splashscreen() {
     sudo sh -c "echo '$boot_delay_command' >> '$firmware_config_path'"
   fi
 }
-change_system_splash() {
-  sudo -E bash -c "$PROJ_DIR/scripts/update_system_splash.sh"
-  sudo -E bash -c "$PROJ_DIR/scripts/update_system_splash.sh -s $PROJ_DIR/public/splashscreen_90.png --no-wallpaper"
-}
 
 create_systemd_service() {
   systemd_path="/etc/systemd/user/spielstand.service"
@@ -246,7 +242,8 @@ read -p "Drücke <ENTER> um das Setup zu beginnen..."
 set_project_path
 run_step "Taskbar ausblenden" hide_taskbar
 run_step "Entferne Splashscreen" remove_splashscreen
-run_step "System-Splashscreen ändern" change_system_splash
+run_step "Desktop Wallpaper ändern" sudo -E bash -c "$PROJ_DIR/scripts/set_wallpaper.sh"
+run_step "System-Splashscreen ändern" sudo -E bash -c "$PROJ_DIR/scripts/update_system_splash.sh -s $PROJ_DIR/public/splashscreen_90.png"
 run_step "Systemd-Datei für Systemstart erstellen" create_systemd_service
 run_step "Mülleimer entfernen" remove_trash_basket
 run_step "Aktiviere SSH" sudo raspi-config nonint do_ssh 0

@@ -9,7 +9,7 @@ usage() {
   cat <<EOF
 Verwendung: $(basename "$0") [OPTIONEN]
 
-Ersetzt das Plymouth-Splashscreen-Bild und passt den Shutdown-Modus an.
+Ersetzt den Desktop-Hintergrund
 
 Optionen:
   -s, --source DATEI     Pfad zum Quellbild
@@ -36,26 +36,9 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-PLYMOUTH_SHUTDOWN_FILE="/usr/lib/systemd/system/plymouth-poweroff.service"
-REPLACEMENT="--mode=reboot"
-TARGET="/usr/share/plymouth/themes/pix/splash.png"
-
 if [[ ! -f "$SOURCE" ]]; then
   echo "Quellbild nicht gefunden: $SOURCE" >&2
   exit 1
 fi
 
-if [[ ! -f "$PLYMOUTH_SHUTDOWN_FILE" ]]; then
-  echo "Plymouth-Service-Datei nicht gefunden: $PLYMOUTH_SHUTDOWN_FILE" >&2
-  exit 1
-fi
-
-sudo cp -rf "$SOURCE" "$TARGET"
-sudo update-initramfs -u
-
-sudo sed -i "s/--mode=shutdown/$REPLACEMENT/" "$PLYMOUTH_SHUTDOWN_FILE" > /dev/null 2>&1
-
-if ! grep -q -- "$REPLACEMENT" "$PLYMOUTH_SHUTDOWN_FILE"; then
-  echo "Shutdown-Bild konnte nicht ausgetauscht werden!" >&2
-  exit 1
-fi
+pcmanfm -w "$SOURCE"
