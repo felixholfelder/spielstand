@@ -152,9 +152,15 @@ EOF
 }
 
 hide_taskbar() {
-  wf_panel_path="$HOME/.config/wf-panel-pi.ini"
+  wf_panel_paths=(
+    "$HOME/.config/wf-panel-pi.ini"
+    "$HOME/.config/wf-panel-pi/wf-panel-pi.ini"
+  )
 
-  sudo tee "$wf_panel_path" > /dev/null <<EOF
+  for wf_panel_path in "${wf_panel_paths[@]}"; do
+    sudo mkdir -p "$(dirname "$wf_panel_path")"
+
+    sudo tee "$wf_panel_path" > /dev/null <<EOF
 # Hide taskbar
 [panel]
 autohide=true
@@ -162,11 +168,11 @@ autohide_duration=500
 heightwhenhidden=0
 EOF
 
-  # Verify creation
-  if ! grep -q -- "autohide=true" "$wf_panel_path"; then
-    echo "Hiding taskbar failed!" >&2
-    return 1
-  fi
+    if ! grep -q -- "autohide=true" "$wf_panel_path"; then
+      echo "Hiding taskbar failed for $wf_panel_path!" >&2
+      return 1
+    fi
+  done
 }
 
 remove_trash_basket() {
