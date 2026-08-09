@@ -78,6 +78,24 @@ set_project_path() {
   fi
 }
 
+hide_taskbar() {
+  wf_panel_path="$HOME/.config/wf-panel-pi.ini"
+
+  sudo tee "$wf_panel_path" > /dev/null <<EOF
+# Hide taskbar
+[panel]
+autohide=true
+autohide_duration=500
+heightwhenhidden=0
+EOF
+
+  # Verify creation
+  if ! grep -q -- "autohide=true" "$wf_panel_path"; then
+    echo "Hiding taskbar failed!" >&2
+    return 1
+  fi
+}
+
 remove_splashscreen() {
   firmware_config_path="/boot/firmware/config.txt"
   disable_splash_command="disable_splash=1"
@@ -220,6 +238,7 @@ echo -e "Sollte dieses Setup-Script bei einem Schritt fehlschlagen, ja... dann k
 read -p "Drücke <ENTER> um das Setup zu beginnen..."
 
 set_project_path
+run_step "Taskbar ausblenden" hide_taskbar
 run_step "Entferne Splashscreen" remove_splashscreen
 run_step "System-Splashscreen ändern" change_system_splash
 run_step "Systemd-Datei für Systemstart erstellen" create_systemd_service
