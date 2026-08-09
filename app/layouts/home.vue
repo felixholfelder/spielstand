@@ -5,6 +5,7 @@ const theme = useTheme();
 const route = useRoute();
 
 const isDark = ref(theme.global.name.value === "dark");
+const showShutdownDialog = ref(false);
 
 function toggleTheme() {
   theme.global.name.value =
@@ -12,6 +13,14 @@ function toggleTheme() {
   if (import.meta.client) {
     localStorage.setItem("theme", theme.global.name.value);
   }
+}
+
+async function callShutdown() {
+  await $fetch("/api/shutdown");
+}
+
+async function callReboot() {
+  await $fetch("/api/reboot");
 }
 
 onMounted(() => {
@@ -42,7 +51,18 @@ onMounted(() => {
         </v-icon>
       </v-btn>
 
-      <btn-shutdown v-if="route.query.platform == 'raspberry'" />
+      <v-icon-btn
+        v-if="route.query.platform == 'raspberry'"
+        icon="mdi-power"
+        @click="showShutdownDialog = !showShutdownDialog"
+      />
+
+      <shutdown-dialog
+        v-model="showShutdownDialog"
+        @shutdown="callShutdown"
+        @reboot="callReboot"
+        @update:model-value="showShutdownDialog = false"
+      />
     </v-app-bar>
 
     <v-main>

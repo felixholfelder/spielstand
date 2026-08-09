@@ -3,13 +3,7 @@ import { useTheme } from "vuetify";
 
 const theme = useTheme();
 
-const {
-  fontSize,
-  increase,
-  decrease,
-  MIN_GAMES_COUNT_FONT_SIZE,
-  MAX_GAMES_COUNT_FONT_SIZE,
-} = useGamesCountFontSize();
+const { increase, decrease } = useGamesCountFontSize();
 
 onMounted(() => {
   if (import.meta.client) {
@@ -26,19 +20,9 @@ onMounted(() => {
     <v-main>
       <div class="controls-row">
         <v-icon-btn icon="mdi-arrow-left" @click="$router.back()" />
-
         <v-spacer />
-
-        <v-icon-btn
-          icon="mdi-minus"
-          :disabled="fontSize <= MIN_GAMES_COUNT_FONT_SIZE"
-          @click="decrease"
-        />
-        <v-icon-btn
-          icon="mdi-plus"
-          :disabled="fontSize >= MAX_GAMES_COUNT_FONT_SIZE"
-          @click="increase"
-        />
+        <v-icon-btn icon="mdi-minus" @click="decrease" />
+        <v-icon-btn icon="mdi-plus" @click="increase" />
       </div>
 
       <slot />

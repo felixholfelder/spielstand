@@ -12,8 +12,7 @@ export function useGamesCountFontSize() {
   }
 
   function decrease() {
-    fontSize.value = Math.max(fontSize.value - GAMES_COUNT_FONT_SIZE_STEP
-    );
+    fontSize.value = Math.max(fontSize.value - GAMES_COUNT_FONT_SIZE_STEP);
   }
 
   return {
