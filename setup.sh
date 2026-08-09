@@ -223,10 +223,10 @@ install_screen_keyboard() {
 }
 
 setup_shutdown_service() {
-  target="~/shutdown-service/"
+  target="$HOME/shutdown-service"
   mkdir -p "$target"
-  cp "$PROJ_DIR/shutdown-service/server.js" "$target"
-  cp "$PROJ_DIR/shutdown-service/package.json" "$target"
+  cp "$PROJ_DIR/shutdown-service/server.js" "$target/server.js"
+  cp "$PROJ_DIR/shutdown-service/package.json" "$target/package.json"
 
   # TODO - das ganze in Docker Container umwandeln?
   cd "$target"
