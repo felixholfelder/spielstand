@@ -16,11 +16,11 @@ function toggleTheme() {
 }
 
 async function callShutdown() {
-  await $fetch("/api/shutdown");
+  await fetch("http://localhost:5005/shutdown");
 }
 
 async function callReboot() {
-  await $fetch("/api/reboot");
+  await fetch("http://localhost:5005/reboot");
 }
 
 onMounted(() => {
