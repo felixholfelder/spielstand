@@ -1,13 +1,12 @@
 {
-    "name": "shutdown-service",
-    "version": "1.0.0",
-    "description": "Lokaler Service, der einen Shutdown-Endpoint fuer den Kiosk-Button bereitstellt",
-    "main": "server.js",
-    "scripts": {
-        "start": "node server.js"
-    },
-    "dependencies": {
-        "express": "^4.19.2"
-    }
+  "name": "shutdown-service",
+  "version": "1.0.0",
+  "description": "Lokaler Service, der einen Shutdown-Endpoint fuer den Kiosk-Button bereitstellt",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
 }
-

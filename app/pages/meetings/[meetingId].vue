@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import type { LiveMeeting, LiveMeetingsResponse } from "~/models/live-meeting";
+import { useGamesCountFontSize } from "~/composables/useGamesCountFontsize.ts";
+
+definePageMeta({
+  layout: "meeting",
+});
 
 const route = useRoute();
 
 const liveMeeting = ref<LiveMeeting>();
+
+const { fontSize: gamesCountFontSize } = useGamesCountFontSize();
 
 async function loadMeeting() {
   const meetingId = route.params.meetingId;
@@ -30,16 +37,26 @@ onMounted(async () => {
 
 <template>
   <v-container fluid class="fill-height d-flex flex-column">
-    <v-row align="center" no-gutters @click="loadMeeting">
+    <v-row align="center" no-gutters class="flex-grow-1" @click="loadMeeting">
       <v-col class="text-center">
-        <div class="games-count">{{ liveMeeting?.games_home }}</div>
+        <div
+          class="games-count"
+          :style="{ fontSize: `${gamesCountFontSize}px` }"
+        >
+          {{ liveMeeting?.games_home }}
+        </div>
         <div class="team">{{ liveMeeting?.team_home }}</div>
       </v-col>
 
       <v-divider vertical :thickness="3" class="border-opacity-100" gradient />
 
       <v-col class="text-center">
-        <div class="games-count">{{ liveMeeting?.games_guest }}</div>
+        <div
+          class="games-count"
+          :style="{ fontSize: `${gamesCountFontSize}px` }"
+        >
+          {{ liveMeeting?.games_guest }}
+        </div>
         <div class="team">{{ liveMeeting?.team_guest }}</div>
       </v-col>
     </v-row>
@@ -47,13 +64,12 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.v-row {
+.v-row.flex-grow-1 {
   cursor: pointer;
   min-height: 100vh;
 }
 
 .games-count {
-  font-size: clamp(200px, 50vw, 260px);
   font-weight: 700;
   line-height: 1;
 }

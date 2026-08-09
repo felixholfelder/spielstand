@@ -2,7 +2,7 @@
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
-const route = useRoute()
+const route = useRoute();
 
 const isDark = ref(theme.global.name.value === "dark");
 
