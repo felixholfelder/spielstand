@@ -147,30 +147,6 @@ EOF
   systemctl enable --user spielstand.service
 }
 
-hide_taskbar() {
-  wf_panel_paths=(
-    "$HOME/.config/wf-panel-pi.ini"
-    "$HOME/.config/wf-panel-pi/wf-panel-pi.ini"
-  )
-
-  for wf_panel_path in "${wf_panel_paths[@]}"; do
-    sudo mkdir -p "$(dirname "$wf_panel_path")"
-
-    sudo tee "$wf_panel_path" > /dev/null <<EOF
-# Hide taskbar
-[panel]
-autohide=true
-autohide_duration=500
-heightwhenhidden=0
-EOF
-
-    if ! grep -q -- "autohide=true" "$wf_panel_path"; then
-      echo "Hiding taskbar failed for $wf_panel_path!" >&2
-      return 1
-    fi
-  done
-}
-
 remove_trash_basket() {
   CONFIG_FILES=$(find "$HOME/.config/pcmanfm" -type f -name "desktop-items-*.conf" 2>/dev/null)
 
@@ -278,7 +254,6 @@ echo -e "Sollte dieses Setup-Script bei einem Schritt fehlschlagen, ja... dann k
 read -p "Drücke <ENTER> um das Setup zu beginnen..."
 
 set_project_path
-run_step "Taskbar ausblenden" hide_taskbar
 run_step "Entferne Splashscreen" remove_splashscreen
 run_step "System-Splashscreen ändern" sudo -E "$PROJ_DIR/scripts/update_system_splash.sh" -s "$PROJ_DIR/public/splashscreen_90.png"
 run_step "Desktop Wallpaper ändern" sudo -E bash -c "$PROJ_DIR/scripts/set_wallpaper.sh"
