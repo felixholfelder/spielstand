@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { useTheme } from "vuetify";
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 const theme = useTheme();
 const { fontSize, increase, decrease } = useGamesCountFontSize();
-
-import { ref, onMounted, onBeforeUnmount } from 'vue'
 const isFullscreen = ref(false)
 
 function updateFullscreenState() {
