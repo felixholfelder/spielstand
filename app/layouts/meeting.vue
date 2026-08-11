@@ -2,7 +2,7 @@
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
-const { increase, decrease } = useGamesCountFontSize();
+const { fontSize, increase, decrease } = useGamesCountFontSize();
 
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 const isFullscreen = ref(false)
@@ -61,6 +61,7 @@ onMounted(async () => {
         <v-icon-btn :icon="isFullscreen ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'" @click="toggleFullscreen"></v-icon-btn>
         <v-divider class="ma-2" vertical />
         <v-icon-btn icon="mdi-minus" @click="decrease" />
+        <div class="ma-2">{{ fontSize }}</div>
         <v-icon-btn icon="mdi-plus" @click="increase" />
       </div>
 
