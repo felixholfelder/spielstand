@@ -129,8 +129,8 @@ async function restoreFromSession() {
 }
 
 onMounted(async () => {
-  await fetchClubs();
   await restoreFromSession();
+  await fetchClubs();
 });
 
 const activeRound = computed<string | undefined>(() => {
