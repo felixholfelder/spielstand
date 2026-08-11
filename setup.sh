@@ -131,9 +131,10 @@ Type=simple
 WorkingDirectory=$PROJ_DIR
 ExecStart=$PROJ_DIR/scripts/start.sh
 Restart=on-failure
+RestartSec=3
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical-session.target
 EOF
 
   # Verify creation
