@@ -67,6 +67,11 @@ onMounted(async () => {
 .v-row.flex-grow-1 {
   cursor: pointer;
   min-height: 100vh;
+  flex-wrap: nowrap;
+}
+
+.v-row.flex-grow-1 > .v-col {
+  min-width: 0;
 }
 
 .games-count {
