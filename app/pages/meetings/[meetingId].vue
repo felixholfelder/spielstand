@@ -43,7 +43,7 @@ onMounted(async () => {
           class="games-count"
           :style="{ fontSize: `${gamesCountFontSize}px` }"
         >
-          {{ liveMeeting?.games_home }}
+          {{ liveMeeting?.matches_home }}
         </div>
         <div class="team">{{ liveMeeting?.team_home }}</div>
       </v-col>
@@ -55,7 +55,7 @@ onMounted(async () => {
           class="games-count"
           :style="{ fontSize: `${gamesCountFontSize}px` }"
         >
-          {{ liveMeeting?.games_guest }}
+          {{ liveMeeting?.matches_guest }}
         </div>
         <div class="team">{{ liveMeeting?.team_guest }}</div>
       </v-col>

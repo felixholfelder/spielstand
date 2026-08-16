@@ -1,8 +1,8 @@
 export interface LiveMeeting {
   team_home: string;
   team_guest: string;
-  games_home: number;
-  games_guest: number;
+  matches_home: number;
+  matches_guest: number;
 }
 
 export interface LiveMeetingsResponse {
