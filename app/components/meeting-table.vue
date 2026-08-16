@@ -12,7 +12,7 @@ defineProps<{
 
 const router = useRouter();
 const meetingHeaders = [
-  { title: "Live", value: "live" },
+  { title: "Status", value: "live" },
   {
     title: "Datum",
     key: "date",
@@ -45,7 +45,7 @@ function onMeetingClick(_: any, item: { item: Meeting }) {
         </v-chip>
 
         <v-icon
-          v-else-if="item.is_meeting_completed"
+          v-else-if="item.is_meeting_complete"
           color="green"
           icon="mdi-check-circle"
         />

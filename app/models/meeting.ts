@@ -7,7 +7,7 @@ export interface Meeting {
   team_away_id: string;
   meeting_id: string;
   round_type: string;
-  is_meeting_completed: string;
+  is_meeting_complete: string;
 }
 
 export interface MeetingGroup {
