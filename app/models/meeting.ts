@@ -8,6 +8,8 @@ export interface Meeting {
   meeting_id: string;
   round_type: string;
   is_meeting_complete: string;
+  matches_won: string;
+  matches_lost: string;
 }
 
 export interface MeetingGroup {

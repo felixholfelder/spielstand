@@ -20,6 +20,11 @@ const meetingHeaders = [
   },
   { title: "Heim", value: "team_home" },
   { title: "Gast", value: "team_away" },
+  {
+    title: "Ergebnis",
+    key: "matches_won",
+    value: (item: Meeting) => `${item.matches_won}:${item.matches_lost}`,
+  },
 ];
 
 function onMeetingClick(_: any, item: { item: Meeting }) {
