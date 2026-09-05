@@ -211,6 +211,7 @@ watch(activeRound, (val) => {
               item-value="clubnr"
               label="Verein wählen"
               variant="outlined"
+              autocomplete="off"
               clearable
               no-filter
               return-object
@@ -241,6 +242,7 @@ watch(activeRound, (val) => {
               item-value="team_id"
               label="Mannschaft wählen"
               variant="outlined"
+              autocomplete="off"
               dense
               no-filter
               return-object
