@@ -48,15 +48,20 @@ function onMeetingClick(_: any, item: { item: Meeting }) {
       @click:row="onMeetingClick"
     >
       <template #item.live="{ item }">
-        <v-chip v-if="item.live" color="red" size="small" variant="flat">
-          LIVE
-        </v-chip>
-
         <v-icon
-          v-else-if="item.is_meeting_complete"
+          v-if="item.is_meeting_complete"
           color="green"
           icon="mdi-check-circle"
         />
+
+        <v-chip
+          v-else-if="new Date(item.date).getTime() < new Date().getTime()"
+          color="red"
+          size="small"
+          variant="flat"
+        >
+          LIVE
+        </v-chip>
 
         <v-icon v-else color="grey" icon="mdi-clock-outline" />
       </template>
