@@ -23,7 +23,10 @@ const meetingHeaders = [
   {
     title: "Ergebnis",
     key: "matches_won",
-    value: (item: Meeting) => `${item.matches_won}:${item.matches_lost}`,
+    value: (item: Meeting) =>
+      item.is_meeting_complete
+        ? `${item.matches_won}:${item.matches_lost}`
+        : "",
   },
 ];
 
