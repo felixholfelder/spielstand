@@ -1,45 +1,45 @@
 <script setup lang="ts">
 import { useTheme } from "vuetify";
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from "vue";
 
 const theme = useTheme();
 const { fontSize, increase, decrease } = useGamesCountFontSize();
-const isFullscreen = ref(false)
+const isFullscreen = ref(false);
 
 function updateFullscreenState() {
-  const state = !!document.fullscreenElement
-  isFullscreen.value = state
+  const state = !!document.fullscreenElement;
+  isFullscreen.value = state;
 }
 async function toggleFullscreen() {
   try {
     if (!document.fullscreenElement) {
-      await enterFullscreen()
-      localStorage.setItem("isFullscreen", "1")
+      await enterFullscreen();
+      localStorage.setItem("isFullscreen", "1");
     } else {
-      await exitFullscreen()
-      localStorage.setItem("isFullscreen", "0")
+      await exitFullscreen();
+      localStorage.setItem("isFullscreen", "0");
     }
   } catch (err) {
-    console.error('Fullscreen-Fehler:', err)
+    console.error("Fullscreen-Fehler:", err);
   }
 }
 
 async function enterFullscreen() {
-  await document.documentElement.requestFullscreen()
+  await document.documentElement.requestFullscreen();
 }
 
 async function exitFullscreen() {
-  await document.exitFullscreen()
+  await document.exitFullscreen();
 }
 
 onBeforeUnmount(() => {
-  document.removeEventListener('fullscreenchange', updateFullscreenState)
-})
+  document.removeEventListener("fullscreenchange", updateFullscreenState);
+});
 
 onMounted(async () => {
-  document.addEventListener('fullscreenchange', updateFullscreenState)
+  document.addEventListener("fullscreenchange", updateFullscreenState);
   if (localStorage.getItem("isFullscreen") == "1") {
-    await enterFullscreen()
+    await enterFullscreen();
   }
 
   if (import.meta.client) {
@@ -55,9 +55,18 @@ onMounted(async () => {
   <v-app>
     <v-main>
       <div class="controls-row">
-        <v-icon-btn icon="mdi-arrow-left" @click="exitFullscreen(); $router.back()" />
+        <v-icon-btn
+          icon="mdi-arrow-left"
+          @click="
+            exitFullscreen();
+            $router.back();
+          "
+        />
         <v-spacer />
-        <v-icon-btn :icon="isFullscreen ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'" @click="toggleFullscreen"></v-icon-btn>
+        <v-icon-btn
+          :icon="isFullscreen ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'"
+          @click="toggleFullscreen"
+        />
         <v-divider class="ma-2" vertical />
         <v-icon-btn icon="mdi-minus" @click="decrease" />
         <div class="ma-2">{{ fontSize }}</div>
