@@ -12,70 +12,83 @@ definePageMeta({
   layout: "home",
 });
 
+const { showError } = useSnackbar();
+
 const search = ref("");
-const clubs = ref<Club[]>([]);
-const selectedClub = ref<Club>();
-const teams = ref<Team[]>([]);
-const meetings = ref<Meeting[]>([]);
-const selectedTeam = ref<Team>();
 const page = ref(1);
-const clubsLoading = ref(false);
-const scheduleLoading = ref(false);
+const selectedClub = ref<Club>();
+const selectedTeam = ref<Team>();
 
 const STORAGE_KEY_CLUB = "selectedClub";
 const STORAGE_KEY_TEAM = "selectedTeam";
 
 let restoring = false;
 
-async function fetchClubs() {
-  try {
-    const res = await $fetch<ClubsResponse>("/api/clubs", {
-      query: { name: search.value, page: page.value },
-    });
+const {
+  data: clubsRaw,
+  status: clubsStatus,
+  error: clubsError,
+} = useFetch<ClubsResponse>("/api/clubs", {
+  query: { name: search },
+  watch: [search, page],
+  transform: (res) =>
+      res.results.filter((e) => e.clubname !== "-kein-club-"),
+});
 
-    res.results = res.results.filter((e) => e.clubname !== "-kein-club-");
+const clubs = computed<Club[]>(() => clubsRaw.value ?? []);
+const clubsLoading = computed(() => clubsStatus.value === "pending");
 
-    clubs.value = res.results;
-  } finally {
-    clubsLoading.value = false;
-  }
-}
+watch(clubsError, (err) => {
+  if (err) showError("Vereine konnten nicht geladen werden.");
+});
 
-async function fetchTeams() {
-  try {
-    const res = await $fetch<TeamsResponse>("/api/teams", {
-      query: {
-        association: selectedClub.value?.organization_short,
-        clubId: selectedClub.value?.clubnr,
-      },
-    });
+const {
+  data: teamsRaw,
+  execute: fetchTeamsExecute,
+  error: teamsError,
+} = useFetch<TeamsResponse>("/api/teams", {
+  query: {
+    association: computed(() => selectedClub.value?.organization_short),
+    clubId: computed(() => selectedClub.value?.clubnr),
+  },
+  transform: (res) => res.data.teams_list.club_teams,
+  immediate: false,
+  watch: false,
+});
+const teams = computed<Team[]>(() => teamsRaw.value ?? []);
 
-    teams.value = res.data.teams_list.club_teams;
-  } catch (error) {
-    console.error(error);
-  }
-}
+watch(teamsError, (err) => {
+  if (err) showError("Mannschaften konnten nicht geladen werden.");
+});
+
+const {
+  data: meetingsRaw,
+  status: meetingsStatus,
+  execute: fetchMeetingsExecute,
+  error: meetingsError,
+} = useFetch<MeetingsResponse>("/api/team-schedule", {
+  query: {
+    association: computed(() => selectedTeam.value?.team_organisation_short),
+    groupId: computed(() => selectedTeam.value?.group_id),
+    teamId: computed(() => selectedTeam.value?.team_id),
+  },
+  transform: (res) =>
+      res.data.meetings_excerpt.meetings.flatMap((group) =>
+          Object.values(group).flat(),
+      ),
+  immediate: false,
+  watch: false,
+});
+
+const meetings = computed<Meeting[]>(() => meetingsRaw.value ?? []);
+const scheduleLoading = computed(() => meetingsStatus.value === "pending");
+
+watch(meetingsError, (err) => {
+  if (err) showError("Spielplan konnte nicht geladen werden.");
+});
 
 async function onTeamSelected() {
-  try {
-    scheduleLoading.value = true;
-    const res = await $fetch<MeetingsResponse>("/api/team-schedule", {
-      query: {
-        association: selectedTeam.value?.team_organisation_short,
-        groupId: selectedTeam.value?.group_id,
-        teamId: selectedTeam.value?.team_id,
-      },
-    });
-
-    console.log(res);
-
-    meetings.value = res.data.meetings_excerpt.meetings.flatMap((group) =>
-      Object.values(group).flat(),
-    );
-  } catch (error) {
-    console.error(error);
-  }
-  scheduleLoading.value = false;
+  await fetchMeetingsExecute();
 
   if (restoring) return;
   if (!selectedTeam.value) {
@@ -89,10 +102,8 @@ async function onClubSelected() {
   if (restoring) return;
 
   selectedTeam.value = undefined;
-  meetings.value = [];
 
   if (!selectedClub.value) {
-    teams.value = [];
     localStorage.removeItem(STORAGE_KEY_CLUB);
     localStorage.removeItem(STORAGE_KEY_TEAM);
     return;
@@ -101,7 +112,7 @@ async function onClubSelected() {
   localStorage.setItem(STORAGE_KEY_CLUB, JSON.stringify(selectedClub.value));
   localStorage.removeItem(STORAGE_KEY_TEAM);
 
-  await fetchTeams();
+  await fetchTeamsExecute();
 }
 
 async function restoreFromSession() {
@@ -115,14 +126,16 @@ async function restoreFromSession() {
   restoring = true;
   try {
     selectedClub.value = JSON.parse(savedClub);
-    await fetchTeams();
+    await fetchTeamsExecute();
 
     if (savedTeam) {
       const parsedTeam: Team = JSON.parse(savedTeam);
-      const match = teams.value.find((t) => t.team_id === parsedTeam.team_id);
+      const match = teams.value?.find(
+          (t) => t.team_id === parsedTeam.team_id,
+      );
       if (match) {
         selectedTeam.value = match;
-        await onTeamSelected();
+        await fetchMeetingsExecute();
       }
     }
   } finally {
@@ -132,11 +145,10 @@ async function restoreFromSession() {
 
 onMounted(async () => {
   await restoreFromSession();
-  await fetchClubs();
 });
 
 const activeRound = computed<string | undefined>(() => {
-  if (meetings.value.length === 0) return undefined;
+  if (!meetings.value || meetings.value.length === 0) return undefined;
 
   const now = new Date();
   const isSameDay = (date: Date) =>
@@ -144,7 +156,9 @@ const activeRound = computed<string | undefined>(() => {
     date.getMonth() === now.getMonth() &&
     date.getDate() === now.getDate();
 
-  const todaysMeeting = meetings.value.find((m) => isSameDay(new Date(m.date)));
+  const todaysMeeting = meetings.value.find((m) =>
+    isSameDay(new Date(m.date)),
+  );
 
   if (todaysMeeting) {
     return todaysMeeting.round_type;
@@ -168,7 +182,7 @@ const activeRound = computed<string | undefined>(() => {
 const groupedByRound = computed<MeetingGroup[]>(() => {
   const groups = new Map<string, Meeting[]>();
 
-  for (const meeting of meetings.value) {
+  for (const meeting of meetings.value ?? []) {
     const key = meeting.round_type;
     if (!groups.has(key)) {
       groups.set(key, []);
@@ -180,13 +194,6 @@ const groupedByRound = computed<MeetingGroup[]>(() => {
     roundType,
     meetings,
   }));
-});
-
-let debounceTimer: ReturnType<typeof setTimeout>;
-
-watch(search, () => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(async () => await fetchClubs(), 300);
 });
 
 const selectedRoundTab = ref<string>();

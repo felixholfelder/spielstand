@@ -67,6 +67,7 @@ onMounted(() => {
 
     <v-main>
       <slot />
+      <global-snackbar />
     </v-main>
   </v-app>
 </template>
