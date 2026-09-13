@@ -105,7 +105,6 @@ onUnmounted(() => {
 .separator {
   font-weight: 700;
   line-height: 1;
-  opacity: 0.85;
   margin-bottom: 64px;
 }
 
