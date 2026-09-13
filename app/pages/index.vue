@@ -67,6 +67,8 @@ async function onTeamSelected() {
       },
     });
 
+    console.log(res);
+
     meetings.value = res.data.meetings_excerpt.meetings.flatMap((group) =>
       Object.values(group).flat(),
     );

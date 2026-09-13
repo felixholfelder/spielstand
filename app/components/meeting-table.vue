@@ -55,7 +55,7 @@ function onMeetingClick(_: any, item: { item: Meeting }) {
         />
 
         <v-chip
-          v-else-if="new Date(item.date).getTime() < new Date().getTime()"
+          v-else-if="item.has_nu_live_push_data"
           color="red"
           size="small"
           variant="flat"
@@ -63,7 +63,11 @@ function onMeetingClick(_: any, item: { item: Meeting }) {
           LIVE
         </v-chip>
 
-        <v-icon v-else color="grey" icon="mdi-clock-outline" />
+        <v-icon
+          v-else-if="new Date(item.date).getTime() < new Date().getTime()"
+          color="grey"
+          icon="mdi-clock-outline"
+        />
       </template>
       <template #item.team_home="{ item }">
         <div

@@ -20,8 +20,8 @@ function writeToStorage(value: number) {
 
 export function useGamesCountFontSize() {
   const fontSize = useState<number>(
-      "games-count-font-size",
-      () => readFromStorage() ?? DEFAULT_GAMES_COUNT_FONT_SIZE,
+    "games-count-font-size",
+    () => readFromStorage() ?? DEFAULT_GAMES_COUNT_FONT_SIZE,
   );
 
   watch(fontSize, (value) => {
@@ -29,15 +29,11 @@ export function useGamesCountFontSize() {
   });
 
   function increase() {
-    fontSize.value = Math.min(
-        fontSize.value + GAMES_COUNT_FONT_SIZE_STEP,
-    );
+    fontSize.value = Math.min(fontSize.value + GAMES_COUNT_FONT_SIZE_STEP);
   }
 
   function decrease() {
-    fontSize.value = Math.max(
-        fontSize.value - GAMES_COUNT_FONT_SIZE_STEP,
-    );
+    fontSize.value = Math.max(fontSize.value - GAMES_COUNT_FONT_SIZE_STEP);
   }
 
   return {

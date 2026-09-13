@@ -8,6 +8,7 @@ export interface Meeting {
   meeting_id: string;
   round_type: string;
   is_meeting_complete: string;
+  has_nu_live_push_data: string;
   matches_won: string;
   matches_lost: string;
 }
