@@ -53,7 +53,7 @@ onMounted(async () => {
 
 <template>
   <v-app>
-    <v-main>
+    <v-main class="scroll-main">
       <div class="controls-row">
         <v-icon-btn
           icon="mdi-arrow-left"
@@ -79,15 +79,17 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.scroll-main {
+  height: 100vh;
+  overflow-y: auto;
+}
+
 .controls-row {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 8px 16px;
-  z-index: 9999;
+  position: relative;
+  z-index: 99;
 }
 </style>
