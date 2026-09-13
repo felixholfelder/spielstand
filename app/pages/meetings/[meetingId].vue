@@ -56,7 +56,14 @@ onUnmounted(() => {
         <div class="team">{{ liveMeeting?.team_home }}</div>
       </v-col>
 
-      <v-divider vertical :thickness="3" class="border-opacity-100" gradient />
+      <v-col class="separator-col" cols="auto">
+        <div
+          class="separator"
+          :style="{ fontSize: `${gamesCountFontSize * 0.55}px` }"
+        >
+          :
+        </div>
+      </v-col>
 
       <v-col class="text-center">
         <div
@@ -85,6 +92,21 @@ onUnmounted(() => {
 .games-count {
   font-weight: 700;
   line-height: 1;
+}
+
+.separator-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 0 0.2em;
+}
+
+.separator {
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.85;
+  margin-bottom: 64px;
 }
 
 .team {
