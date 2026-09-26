@@ -237,6 +237,13 @@ EOF
   sudo systemctl enable --now shutdown-service
 }
 
+setup_brightness_slider() {
+  sudo apt install -y yad
+  cp brightness.sh $HOME/brightness.sh
+  cp brightness_gui.sh $HOME/brightness_gui.sh
+
+}
+
 print_ascii_art() {
   echo "
   __       _      _     _                  _
@@ -266,6 +273,7 @@ run_step "Aktiviere SPI" sudo raspi-config nonint do_spi 0
 run_step "Deaktiviere unnötige Services" deactivate_services
 run_step "Installiere Bildschirmtastatur" install_screen_keyboard
 run_step "Setup: Shutdown-service" setup_shutdown_service
+run_step "Setup: Brightness-Slider" setup_brightness_slider
 
 success "Setup erfolgreich abgeschlossen!\n\n"
 
