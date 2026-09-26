@@ -2,6 +2,8 @@
 
 # Chromium im Kiosk-Modus starten
 chromium \
+  --ozone-platform-hint=auto \
+  --enable-features=UseOzonePlatform \
   --noerrdialogs \
   --disable-infobars \
   --no-first-run \

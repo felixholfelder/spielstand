@@ -115,7 +115,7 @@ remove_splashscreen() {
 }
 
 create_systemd_service() {
-  systemd_path="/etc/systemd/system/spielstand.service"
+  systemd_path="/etc/systemd/user/spielstand.service"
 
   user_id=$(id -u)
   username=$(whoami)
@@ -143,9 +143,7 @@ EOF
     return 1
   fi
 
-  sudo systemctl enable daemon-reload
-  sudo systemctl enable enable spielstand.service
-  sudo systemctl enable spielstand.service
+  systemctl --user enable spielstand.service
 }
 
 remove_trash_basket() {
