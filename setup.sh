@@ -238,16 +238,11 @@ EOF
 }
 
 setup_brightness_slider() {
-  sudo apt install -y yad
-  cp brightness.sh $HOME/brightness.sh
-  cp brightness_gui.sh $HOME/brightness_gui.sh
-
-  sudo cp 99-backlight.rules /etc/udev/rules.d/
-  sudo udevadm control --reload-rules
-  sudo udevadm trigger
-
-  mkdir -p "$HOME/.local/share/applications"
-  sudo cp brightness.desktop "$HOME/.local/share/applications/"
+  wget https://files.waveshare.com/wiki/common/Brightness.zip
+  unzip Brightness.zip
+  cd Brightness
+  sudo chmod +x install.sh
+  ./install.sh
 }
 
 print_ascii_art() {

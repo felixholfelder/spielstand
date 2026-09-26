@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Helligkeit
-Comment=Bildschirmhelligkeit einstellen
-Exec=/home/spielstand/spielstand/brightness_gui.sh
-Icon=video-display
-Terminal=false
-Categories=Utility;
