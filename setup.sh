@@ -242,12 +242,12 @@ setup_brightness_slider() {
   cp brightness.sh $HOME/brightness.sh
   cp brightness_gui.sh $HOME/brightness_gui.sh
 
-  cp 99-backlight.rules /etc/udev/rules.d/
+  sudo cp 99-backlight.rules /etc/udev/rules.d/
   sudo udevadm control --reload-rules
   sudo udevadm trigger
 
   mkdir -p "$HOME/.local/share/applications"
-  cp brightness.desktop "$HOME/.local/share/applications/"
+  sudo cp brightness.desktop "$HOME/.local/share/applications/"
 }
 
 print_ascii_art() {
