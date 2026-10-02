@@ -33,7 +33,8 @@ let intervalId: ReturnType<typeof setInterval> | undefined;
 onMounted(async () => {
   await loadMeeting();
 
-  intervalId = setInterval(async () => await loadMeeting(), 120 * 1000);
+  const minutes = 5
+  intervalId = setInterval(async () => await loadMeeting(), 60 * minutes * 1000);
 });
 
 onUnmounted(() => {
