@@ -115,26 +115,28 @@ remove_splashscreen() {
 }
 
 create_systemd_service() {
-  systemd_path="/etc/systemd/user/spielstand.service"
+  systemd_path="/etc/systemd/system/spielstand.service"
 
   user_id=$(id -u)
   username=$(whoami)
 
   sudo tee "$systemd_path" > /dev/null <<EOF
 [Unit]
-Description=Spielstand Web-App opener
-After=graphical-session.target
-PartOf=graphical-session.target
+Description=Spielstand Chromium Kiosk
+After=graphical.target
+Wants=graphical.target
 
 [Service]
 Type=simple
-WorkingDirectory=$PROJ_DIR
-ExecStart=$PROJ_DIR/scripts/start.sh
+User=pi
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/pi/.Xauthority
+ExecStart=/home/pi/spielstand/scripts/start.sh
 Restart=on-failure
-RestartSec=3
+RestartSec=5
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=graphical.target
 EOF
 
   # Verify creation
@@ -143,7 +145,8 @@ EOF
     return 1
   fi
 
-  systemctl --user enable spielstand.service
+  sudo systemctl daemon-reload
+  sudo systemctl enable spielstand.service
 }
 
 remove_trash_basket() {
