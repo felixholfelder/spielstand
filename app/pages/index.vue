@@ -38,8 +38,15 @@ const {
 const clubs = computed<Club[]>(() => clubsRaw.value ?? []);
 const clubsLoading = computed(() => clubsStatus.value === "pending");
 
+function errorMessage(text: string, err: unknown): string {
+  const status =
+      (err as { statusCode?: number; status?: number })?.statusCode ??
+      (err as { status?: number })?.status;
+  return status ? `${text} (Status ${status})` : text;
+}
+
 watch(clubsError, (err) => {
-  if (err) showError("Vereine konnten nicht geladen werden.");
+  if (err) showError(errorMessage("Vereine konnten nicht geladen werden.", err));
 });
 
 const {
@@ -58,7 +65,7 @@ const {
 const teams = computed<Team[]>(() => teamsRaw.value ?? []);
 
 watch(teamsError, (err) => {
-  if (err) showError("Mannschaften konnten nicht geladen werden.");
+  if (err) showError(errorMessage("Mannschaften konnten nicht geladen werden.", err));
 });
 
 const {
@@ -84,7 +91,7 @@ const meetings = computed<Meeting[]>(() => meetingsRaw.value ?? []);
 const scheduleLoading = computed(() => meetingsStatus.value === "pending");
 
 watch(meetingsError, (err) => {
-  if (err) showError("Spielplan konnte nicht geladen werden.");
+  if (err) showError(errorMessage("Spielplan konnte nicht geladen werden.", err));
 });
 
 async function onTeamSelected() {
