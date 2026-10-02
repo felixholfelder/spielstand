@@ -115,28 +115,17 @@ remove_splashscreen() {
 }
 
 create_systemd_service() {
-  systemd_path="/etc/systemd/system/spielstand.service"
+  systemd_path="~/.config/autostart/spielstand.desktop"
 
-  user_id=$(id -u)
-  username=$(whoami)
+  mkdir -p ~/.config/autostart
 
   sudo tee "$systemd_path" > /dev/null <<EOF
-[Unit]
-Description=Spielstand Chromium Kiosk
-After=graphical.target
-Wants=graphical.target
-
-[Service]
-Type=simple
-User=pi
-Environment=DISPLAY=:0
-Environment=XAUTHORITY=/home/pi/.Xauthority
-ExecStart=/home/pi/spielstand/scripts/start.sh
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=graphical.target
+[Desktop Entry]
+Type=Application
+Name=Spielstand
+Exec=/home/pi/start.sh
+Terminal=false
+X-GNOME-Autostart-enabled=true
 EOF
 
   # Verify creation
