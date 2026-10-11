@@ -6,6 +6,7 @@ export interface Meeting {
   team_home_id: string;
   team_away_id: string;
   meeting_id: string;
+  round_name: string;
   round_type: string;
   is_meeting_complete: string;
   has_nu_live_push_data: string;

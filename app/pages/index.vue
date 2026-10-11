@@ -6,7 +6,6 @@ import type {
   MeetingGroup,
   MeetingsResponse,
 } from "~/models/meeting.ts";
-import { RoundType } from "~/enums/round-type.ts";
 
 definePageMeta({
   layout: "home",
@@ -180,61 +179,40 @@ onMounted(async () => {
   await restoreFromSession();
 });
 
-const activeRound = computed<string | undefined>(() => {
-  if (!meetings.value || meetings.value.length === 0) return undefined;
+type RoundGroup = MeetingGroup & { label: string };
 
-  const now = new Date();
-  const isSameDay = (date: Date) =>
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate();
+const ROUND_TYPE_VORRUNDE = 0;
+const ROUND_TYPE_RUECKRUNDE = 1;
 
-  const todaysMeeting = meetings.value.find((m) =>
-    isSameDay(new Date(m.date)),
-  );
-
-  if (todaysMeeting) {
-    return todaysMeeting.round_type;
+function roundKey(meeting: Meeting): string {
+  const type = parseInt(meeting.round_type);
+  if (type === ROUND_TYPE_VORRUNDE || type === ROUND_TYPE_RUECKRUNDE) {
+    return `type:${type}`;
   }
+  return `name:${meeting.round_name}`;
+}
 
-  const pastMeetings = meetings.value
-    .filter((m) => new Date(m.date).getTime() < now.getTime())
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+function roundLabel(meeting: Meeting): string {
+  const type = parseInt(meeting.round_type);
+  if (type === ROUND_TYPE_VORRUNDE) return "Vorrunde";
+  if (type === ROUND_TYPE_RUECKRUNDE) return "Rückrunde";
+  return meeting.round_name;
+}
 
-  if (pastMeetings.length > 0) {
-    return pastMeetings[0]!.round_type;
-  }
-
-  const futureMeetings = [...meetings.value].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
-
-  return futureMeetings[0]?.round_type;
-});
-
-const groupedByRound = computed<MeetingGroup[]>(() => {
-  const groups = new Map<string, Meeting[]>();
+const groupedByRound = computed<RoundGroup[]>(() => {
+  const groups = new Map<string, RoundGroup>();
 
   for (const meeting of meetings.value ?? []) {
-    const key = meeting.round_type;
-    if (!groups.has(key)) {
-      groups.set(key, []);
+    const key = roundKey(meeting);
+    let group = groups.get(key);
+    if (!group) {
+      group = { roundType: key, label: roundLabel(meeting), meetings: [] };
+      groups.set(key, group);
     }
-    groups.get(key)!.push(meeting);
+    group.meetings.push(meeting);
   }
 
-  return Array.from(groups.entries()).map(([roundType, meetings]) => ({
-    roundType,
-    meetings,
-  }));
-});
-
-const selectedRoundTab = ref<string>();
-
-watch(activeRound, (val) => {
-  if (val !== undefined) {
-    selectedRoundTab.value = val;
-  }
+  return Array.from(groups.values());
 });
 </script>
 
@@ -311,24 +289,22 @@ watch(activeRound, (val) => {
     </v-card>
     <v-divider />
     <div class="table-wrapper">
-      <v-tabs v-model="selectedRoundTab">
+      <v-tabs>
         <v-tab
           v-for="group in groupedByRound"
           :key="group.roundType"
-          :value="group.roundType"
         >
-          {{ RoundType[parseInt(group.roundType)] }}
+          {{ group.label }}
         </v-tab>
       </v-tabs>
 
       <div v-if="scheduleLoading" ref="sentinel" class="pa-2 text-center">
         <v-progress-circular indeterminate color="primary" />
       </div>
-      <v-tabs-window v-model="selectedRoundTab">
+      <v-tabs-window>
         <v-tabs-window-item
           v-for="group in groupedByRound"
           :key="group.roundType"
-          :value="group.roundType"
         >
           <meeting-table
             v-if="!scheduleLoading"
