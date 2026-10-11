@@ -14,7 +14,11 @@ definePageMeta({
 
 const { showError } = useSnackbar();
 
+const SEARCH_DEBOUNCE_MS = 700;
+
 const search = ref("");
+const debouncedSearch = ref("");
+const searchPending = ref(false);
 const page = ref(1);
 const selectedClub = ref<Club>();
 const selectedTeam = ref<Team>();
@@ -23,20 +27,42 @@ const STORAGE_KEY_CLUB = "selectedClub";
 const STORAGE_KEY_TEAM = "selectedTeam";
 
 let restoring = false;
+let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+
+watch(search, (val) => {
+  clearTimeout(debounceTimer);
+
+  const text = val ?? "";
+
+  if (selectedClub.value && text === selectedClub.value.clubname) {
+    searchPending.value = false;
+    return;
+  }
+
+  searchPending.value = true;
+  debounceTimer = setTimeout(() => {
+    debouncedSearch.value = text;
+    searchPending.value = false;
+  }, SEARCH_DEBOUNCE_MS);
+});
+
+onBeforeUnmount(() => clearTimeout(debounceTimer));
 
 const {
   data: clubsRaw,
   status: clubsStatus,
   error: clubsError,
 } = useFetch<ClubsResponse>("/api/clubs", {
-  query: { name: search },
-  watch: [search, page],
+  query: { name: debouncedSearch },
+  watch: [debouncedSearch, page],
   transform: (res) =>
       res.results.filter((e) => e.clubname !== "-kein-club-"),
 });
 
 const clubs = computed<Club[]>(() => clubsRaw.value ?? []);
-const clubsLoading = computed(() => clubsStatus.value === "pending");
+const clubsLoading = computed(
+  () => clubsStatus.value === "pending" || searchPending.value,
+);
 
 function errorMessage(text: string, err: unknown): string {
   const status =
