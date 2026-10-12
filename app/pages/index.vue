@@ -21,6 +21,7 @@ const searchPending = ref(false);
 const page = ref(1);
 const selectedClub = ref<Club>();
 const selectedTeam = ref<Team>();
+const selectedRoundTab = ref<number>();
 
 const STORAGE_KEY_CLUB = "selectedClub";
 const STORAGE_KEY_TEAM = "selectedTeam";
@@ -128,6 +129,7 @@ async function onTeamSelected() {
     return;
   }
   localStorage.setItem(STORAGE_KEY_TEAM, JSON.stringify(selectedTeam.value));
+  selectedRoundTab.value = 0;
 }
 
 async function onClubSelected() {
@@ -172,6 +174,7 @@ async function restoreFromSession() {
     }
   } finally {
     restoring = false;
+    selectedRoundTab.value = 0;
   }
 }
 
@@ -289,10 +292,11 @@ const groupedByRound = computed<RoundGroup[]>(() => {
     </v-card>
     <v-divider />
     <div class="table-wrapper">
-      <v-tabs>
+      <v-tabs v-model="selectedRoundTab">
         <v-tab
-          v-for="group in groupedByRound"
+          v-for="(group, index) in groupedByRound"
           :key="group.roundType"
+          :value="index"
         >
           {{ group.label }}
         </v-tab>
@@ -301,10 +305,11 @@ const groupedByRound = computed<RoundGroup[]>(() => {
       <div v-if="scheduleLoading" ref="sentinel" class="pa-2 text-center">
         <v-progress-circular indeterminate color="primary" />
       </div>
-      <v-tabs-window>
+      <v-tabs-window v-model="selectedRoundTab">
         <v-tabs-window-item
-          v-for="group in groupedByRound"
+          v-for="(group, index) in groupedByRound"
           :key="group.roundType"
+          :value="index"
         >
           <meeting-table
             v-if="!scheduleLoading"
