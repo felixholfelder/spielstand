@@ -8,7 +8,7 @@ export default defineCachedEventHandler(
     formData.append("page", query.page as string);
     formData.append("pagesize", "20");
 
-    const result = await $fetch(
+    const result = await $fetch.raw(
       `${config.public.baseApiUrl}/api/search/clubs`,
       {
         method: "POST",
@@ -19,7 +19,14 @@ export default defineCachedEventHandler(
       },
     );
 
-    return result;
+    if (result.status !== 200 || (result._data.error !== undefined && result._data.error !== null)) {
+      throw createError({
+        statusCode: result.status,
+        statusMessage: "Unexpected upstream status",
+      });
+    }
+
+    return result._data;
   },
   {
     maxAge: 60 * 60 * 8, // 8 hours Cache
