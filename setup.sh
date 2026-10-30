@@ -190,23 +190,24 @@ install_screen_keyboard() {
 }
 
 setup_shutdown_service() {
+  username=$(whoami)
   target="$HOME/shutdown-service"
   mkdir -p "$target"
   cp "$PROJ_DIR/shutdown-service/server.js" "$target/server.js"
   cp "$PROJ_DIR/shutdown-service/package.json" "$target/package.json"
 
-  # TODO - das ganze in Docker Container umwandeln?
-  cd "$target"
-  sudo apt-get install nodejs -y
+  sudo apt-get install -y nodejs npm
+  cd "$target" || exit 1
   npm install
+  npm ls express || { echo "express fehlt!"; exit 1; }
 
-  sudo tee "/etc/sudoers.d/shutdown-button" > /dev/null <<EOF
-spielstand ALL=(ALL) NOPASSWD: /sbin/shutdown
+  sudo tee /etc/sudoers.d/shutdown-button > /dev/null <<EOF
+$username ALL=(ALL) NOPASSWD: /sbin/shutdown, /sbin/reboot, /usr/sbin/shutdown, /usr/sbin/reboot
 EOF
+  sudo chmod 0440 /etc/sudoers.d/shutdown-button
+  sudo visudo -cf /etc/sudoers.d/shutdown-button || exit 1
 
-  username=$(whoami)
-
-  sudo tee "/etc/systemd/system/shutdown-service.service" > /dev/null <<EOF
+  sudo tee /etc/systemd/system/shutdown-service.service > /dev/null <<EOF
 [Unit]
 Description=Lokaler Shutdown-Service fuer Kiosk-Button
 After=network.target
@@ -214,8 +215,8 @@ After=network.target
 [Service]
 Type=simple
 User=$username
-WorkingDirectory=$PROJ_DIR/shutdown-service
-ExecStart=/usr/bin/node $HOME/shutdown-service/server.js
+WorkingDirectory=$target
+ExecStart=$(which node) $target/server.js
 Restart=on-failure
 RestartSec=3
 
@@ -224,7 +225,8 @@ WantedBy=multi-user.target
 EOF
 
   sudo systemctl daemon-reload
-  sudo systemctl enable --now shutdown-service
+  sudo systemctl enable shutdown-service
+  sudo systemctl restart shutdown-service
 }
 
 setup_brightness_slider() {
