@@ -1,28 +1,22 @@
 <script setup lang="ts">
-import type { LiveMeeting, LiveMeetingsResponse } from "~/models/live-meeting";
+import type { LiveMeeting } from "~/models/live-meeting";
 import { useGamesCountFontSize } from "~/composables/useGamesCountFontsize.ts";
 
-definePageMeta({
-  layout: "meeting",
-});
-
-const route = useRoute();
-
-const liveMeeting = ref<LiveMeeting>();
+const props = withDefaults(
+    defineProps<{
+      load: () => Promise<LiveMeeting>;
+      intervalMinutes?: number;
+    }>(),
+    { intervalMinutes: 1 },
+);
 
 const { fontSize: gamesCountFontSize } = useGamesCountFontSize();
 
+const liveMeeting = ref<LiveMeeting>();
+
 async function loadMeeting() {
-  const meetingId = route.params.meetingId;
-
   try {
-    const res = await $fetch<LiveMeetingsResponse>("/api/meetings", {
-      query: {
-        meetingId: meetingId,
-      },
-    });
-
-    liveMeeting.value = res.data;
+    liveMeeting.value = await props.load();
   } catch (error) {
     console.error(error);
   }
@@ -32,15 +26,11 @@ let intervalId: ReturnType<typeof setInterval> | undefined;
 
 onMounted(async () => {
   await loadMeeting();
-
-  const minutes = 1
-  intervalId = setInterval(async () => await loadMeeting(), 60 * minutes * 1000);
+  intervalId = setInterval(loadMeeting, props.intervalMinutes * 60 * 1000);
 });
 
 onUnmounted(() => {
-  if (intervalId) {
-    clearInterval(intervalId);
-  }
+  if (intervalId) clearInterval(intervalId);
 });
 </script>
 
@@ -48,29 +38,20 @@ onUnmounted(() => {
   <v-container fluid class="fill-height d-flex flex-column">
     <v-row align="center" no-gutters class="flex-grow-1" @click="loadMeeting">
       <v-col class="text-center">
-        <div
-          class="games-count"
-          :style="{ fontSize: `${gamesCountFontSize}px` }"
-        >
+        <div class="games-count" :style="{ fontSize: `${gamesCountFontSize}px` }">
           {{ liveMeeting?.matches_home }}
         </div>
         <div class="team">{{ liveMeeting?.team_home }}</div>
       </v-col>
 
       <v-col class="separator-col" cols="auto">
-        <div
-          class="separator"
-          :style="{ fontSize: `${gamesCountFontSize * 0.55}px` }"
-        >
+        <div class="separator" :style="{ fontSize: `${gamesCountFontSize * 0.55}px` }">
           :
         </div>
       </v-col>
 
       <v-col class="text-center">
-        <div
-          class="games-count"
-          :style="{ fontSize: `${gamesCountFontSize}px` }"
-        >
+        <div class="games-count" :style="{ fontSize: `${gamesCountFontSize}px` }">
           {{ liveMeeting?.matches_guest }}
         </div>
         <div class="team">{{ liveMeeting?.team_guest }}</div>
