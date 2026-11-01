@@ -105,10 +105,15 @@ const {
     groupId: computed(() => selectedTeam.value?.group_id),
     teamId: computed(() => selectedTeam.value?.team_id),
   },
-  transform: (res) =>
-      res.data.meetings_excerpt.meetings.flatMap((group) =>
-          Object.values(group).flat(),
-      ),
+  transform: (res) => {
+    const season = res.data.head_infos.season;
+
+    return [
+      ...res.data.meetings_excerpt.meetings
+          .flatMap((group) => Object.values(group).flat())
+          .map((meeting): Meeting => ({ ...meeting, season })),
+    ];
+  },
   immediate: false,
   watch: false,
 });

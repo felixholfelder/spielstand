@@ -12,6 +12,7 @@ export interface Meeting {
   has_nu_live_push_data: string;
   matches_won: string;
   matches_lost: string;
+  season: string;
 }
 
 export interface MeetingGroup {
@@ -25,6 +26,9 @@ export interface MeetingResponseGroup {
 
 export interface MeetingsResponse {
   data: {
+    head_infos: {
+      season: string;
+    }
     meetings_excerpt: {
       meetings: MeetingResponseGroup[];
     };
