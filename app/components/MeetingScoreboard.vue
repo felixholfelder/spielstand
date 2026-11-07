@@ -2,6 +2,8 @@
 import type { LiveMeeting } from "~/models/live-meeting";
 import { useGamesCountFontSize } from "~/composables/useGamesCountFontsize.ts";
 
+const { meetingFetchError } = useLayoutControls()
+
 const props = withDefaults(
     defineProps<{
       load: () => Promise<LiveMeeting>;
@@ -17,8 +19,10 @@ const liveMeeting = ref<LiveMeeting>();
 async function loadMeeting() {
   try {
     liveMeeting.value = await props.load();
+    meetingFetchError.value = ""
   } catch (error) {
     console.error(error);
+    meetingFetchError.value = error;
   }
 }
 
