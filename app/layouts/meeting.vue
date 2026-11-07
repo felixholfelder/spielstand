@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { useTheme } from "vuetify";
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import {useLayoutControls} from "~/composables/useLayoutControls.ts";
 
 const theme = useTheme();
 const { fontSize, increase, decrease } = useGamesCountFontSize();
 const isFullscreen = ref(false);
+
+const { meetingFetchError } = useLayoutControls();
 
 function updateFullscreenState() {
   const state = !!document.fullscreenElement;
@@ -63,6 +66,14 @@ onMounted(async () => {
           "
         />
         <v-spacer />
+        <v-tooltip v-if="meetingFetchError !== ''" location="bottom" color="error" interactive>
+          <template #activator="{ props: activatorProps }">
+            <v-icon-btn icon="mdi-alert-circle" color="error" v-bind="activatorProps" />
+          </template>
+          <div>
+            {{ meetingFetchError }}
+          </div>
+        </v-tooltip>
         <v-icon-btn
           :icon="isFullscreen ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'"
           @click="toggleFullscreen"
