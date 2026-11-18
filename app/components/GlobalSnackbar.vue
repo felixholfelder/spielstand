@@ -4,10 +4,10 @@ const { state, hide } = useSnackbar();
 
 <template>
   <v-snackbar
-      v-model="state.visible"
-      :color="state.color"
-      :timeout="state.timeout"
-      location="bottom"
+    v-model="state.visible"
+    :color="state.color"
+    :timeout="state.timeout"
+    location="bottom"
   >
     {{ state.message }}
 

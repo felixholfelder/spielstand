@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import type { LiveMeeting, LiveMeetingsResponse } from "~/models/live-meeting.ts";
+import type {
+  LiveMeeting,
+  LiveMeetingsResponse,
+} from "~/models/live-meeting.ts";
 
 definePageMeta({
   layout: "meeting",

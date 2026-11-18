@@ -31,10 +31,20 @@ const meetingHeaders = [
 ];
 
 function onMeetingClick(_: any, item: { item: Meeting }) {
-  const season = item.item.season.replace("/", "--")
-  router.push(
-    `/meetings/${item.item.meeting_id}?association=${props.selectedClub?.organization_short}&group_id=${props.selectedTeam?.group_id}&season=${season}`
-  );
+  const meeting = item.item;
+
+  router.push({
+    path: `/meetings/${meeting.meeting_id}`,
+    query: {
+      association: props.selectedClub?.organization_short,
+      group_id: props.selectedTeam?.group_id,
+      season: meeting.season.replace("/", "--"),
+      // Das Scoreboard lädt die Logos selbst nach, dafür braucht es die Team-IDs
+      team_association: props.selectedTeam?.team_organisation_short,
+      home_team_id: meeting.team_home_id,
+      away_team_id: meeting.team_away_id,
+    },
+  });
 }
 </script>
 

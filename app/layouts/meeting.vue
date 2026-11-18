@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTheme } from "vuetify";
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import {useLayoutControls} from "~/composables/useLayoutControls.ts";
+import { useLayoutControls } from "~/composables/useLayoutControls.ts";
 
 const theme = useTheme();
 const { fontSize, increase, decrease } = useGamesCountFontSize();
@@ -66,9 +66,18 @@ onMounted(async () => {
           "
         />
         <v-spacer />
-        <v-tooltip v-if="meetingFetchError !== ''" location="bottom" color="error" interactive>
+        <v-tooltip
+          v-if="meetingFetchError !== ''"
+          location="bottom"
+          color="error"
+          interactive
+        >
           <template #activator="{ props: activatorProps }">
-            <v-icon-btn icon="mdi-alert-circle" color="error" v-bind="activatorProps" />
+            <v-icon-btn
+              icon="mdi-alert-circle"
+              color="error"
+              v-bind="activatorProps"
+            />
           </template>
           <div>
             {{ meetingFetchError }}
