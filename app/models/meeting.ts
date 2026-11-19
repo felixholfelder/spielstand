@@ -13,6 +13,8 @@ export interface Meeting {
   matches_won: string;
   matches_lost: string;
   season: string;
+  team_home_club_logo_id?: string;
+  team_away_club_logo_id?: string;
 }
 
 export interface MeetingGroup {
@@ -27,8 +29,9 @@ export interface MeetingResponseGroup {
 export interface MeetingsResponse {
   data: {
     head_infos: {
+      club_logo_id: string;
       season: string;
-    }
+    };
     meetings_excerpt: {
       meetings: MeetingResponseGroup[];
     };

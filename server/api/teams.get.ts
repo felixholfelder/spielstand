@@ -18,7 +18,10 @@ export default defineCachedEventHandler(
       },
     );
 
-    if (result.status !== 200 || (result._data.error !== undefined && result._data.error !== null)) {
+    if (
+      result.status !== 200 ||
+      (result._data.error !== undefined && result._data.error !== null)
+    ) {
       throw createError({
         statusCode: result.status,
         statusMessage: "Unexpected upstream status",

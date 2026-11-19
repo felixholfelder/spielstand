@@ -3,6 +3,8 @@ export interface LiveMeeting {
   team_guest: string;
   matches_home: number;
   matches_guest: number;
+  home_logo_id?: string;
+  guest_logo_id?: string;
 }
 
 export interface LiveMeetingsResponse {

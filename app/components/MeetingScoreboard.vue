@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { LiveMeeting } from "~/models/live-meeting";
 import { useGamesCountFontSize } from "~/composables/useGamesCountFontsize.ts";
+import { clubLogoUrl } from "~/composables/useClubLogo.ts";
 
-const { meetingFetchError } = useLayoutControls()
+const { meetingFetchError } = useLayoutControls();
 
 const props = withDefaults(
     defineProps<{
@@ -16,10 +17,27 @@ const { fontSize: gamesCountFontSize } = useGamesCountFontSize();
 
 const liveMeeting = ref<LiveMeeting>();
 
+const homeLogoId = computed(() => liveMeeting.value?.home_logo_id);
+const awayLogoId = computed(() => liveMeeting.value?.guest_logo_id);
+
+// Ein Logo, das nicht geladen werden kann, wird einfach nicht angezeigt
+const homeLogoFailed = ref(false);
+const awayLogoFailed = ref(false);
+
+watch(homeLogoId, () => (homeLogoFailed.value = false));
+watch(awayLogoId, () => (awayLogoFailed.value = false));
+
+const showHomeLogo = computed(
+    () => !!homeLogoId.value && !homeLogoFailed.value,
+);
+const showAwayLogo = computed(
+    () => !!awayLogoId.value && !awayLogoFailed.value,
+);
+
 async function loadMeeting() {
   try {
     liveMeeting.value = await props.load();
-    meetingFetchError.value = ""
+    meetingFetchError.value = "";
   } catch (error) {
     console.error(error);
     meetingFetchError.value = error;
@@ -42,23 +60,50 @@ onUnmounted(() => {
   <v-container fluid class="fill-height d-flex flex-column">
     <v-row align="center" no-gutters class="flex-grow-1" @click="loadMeeting">
       <v-col class="text-center">
-        <div class="games-count" :style="{ fontSize: `${gamesCountFontSize}px` }">
+        <div
+            class="games-count"
+            :style="{ fontSize: `${gamesCountFontSize}px` }"
+        >
           {{ liveMeeting?.matches_home }}
         </div>
-        <div class="team">{{ liveMeeting?.team_home }}</div>
+        <div class="team-row">
+          <img
+              v-if="showHomeLogo"
+              :src="clubLogoUrl(homeLogoId)"
+              alt=""
+              class="team-logo"
+              @error="homeLogoFailed = true"
+          />
+          <div class="team">{{ liveMeeting?.team_home }}</div>
+        </div>
       </v-col>
 
       <v-col class="separator-col" cols="auto">
-        <div class="separator" :style="{ fontSize: `${gamesCountFontSize * 0.55}px` }">
+        <div
+            class="separator"
+            :style="{ fontSize: `${gamesCountFontSize * 0.55}px` }"
+        >
           :
         </div>
       </v-col>
 
       <v-col class="text-center">
-        <div class="games-count" :style="{ fontSize: `${gamesCountFontSize}px` }">
+        <div
+            class="games-count"
+            :style="{ fontSize: `${gamesCountFontSize}px` }"
+        >
           {{ liveMeeting?.matches_guest }}
         </div>
-        <div class="team">{{ liveMeeting?.team_guest }}</div>
+        <div class="team-row">
+          <img
+              v-if="showAwayLogo"
+              :src="clubLogoUrl(awayLogoId)"
+              alt=""
+              class="team-logo"
+              @error="awayLogoFailed = true"
+          />
+          <div class="team">{{ liveMeeting?.team_guest }}</div>
+        </div>
       </v-col>
     </v-row>
   </v-container>
@@ -94,12 +139,31 @@ onUnmounted(() => {
   margin-bottom: 64px;
 }
 
+/* Logo und Name nebeneinander. Die Schriftgröße wird hier gesetzt, das Logo
+   skaliert in em dazu. min-height sorgt dafür, dass die Zeile mit und ohne
+   Logo gleich hoch ist und die Spielstände auf einer Höhe bleiben. */
+.team-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  min-height: 4.5em;
+  max-width: 100%;
+  font-size: clamp(20px, 3vw, 260px);
+}
+
 .team {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 90%;
-  margin: 0 auto;
-  font-size: clamp(20px, 3vw, 260px);
+}
+
+.team-logo {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 30%;
+  height: 3.5em;
+  object-fit: contain;
 }
 </style>

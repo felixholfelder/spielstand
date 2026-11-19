@@ -1,5 +1,8 @@
 export const useLayoutControls = () => {
-    const meetingFetchError = useState<string>("layout:meetingFetchError", () => "");
+  const meetingFetchError = useState<string>(
+    "layout:meetingFetchError",
+    () => "",
+  );
 
-    return { meetingFetchError };
+  return { meetingFetchError };
 };

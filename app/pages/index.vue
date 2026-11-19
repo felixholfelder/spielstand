@@ -55,8 +55,7 @@ const {
 } = useFetch<ClubsResponse>("/api/clubs", {
   query: { name: debouncedSearch },
   watch: [debouncedSearch, page],
-  transform: (res) =>
-      res.results.filter((e) => e.clubname !== "-kein-club-"),
+  transform: (res) => res.results.filter((e) => e.clubname !== "-kein-club-"),
 });
 
 const clubs = computed<Club[]>(() => clubsRaw.value ?? []);
@@ -66,13 +65,14 @@ const clubsLoading = computed(
 
 function errorMessage(text: string, err: unknown): string {
   const status =
-      (err as { statusCode?: number; status?: number })?.statusCode ??
-      (err as { status?: number })?.status;
+    (err as { statusCode?: number; status?: number })?.statusCode ??
+    (err as { status?: number })?.status;
   return status ? `${text} (Status ${status})` : text;
 }
 
 watch(clubsError, (err) => {
-  if (err) showError(errorMessage("Vereine konnten nicht geladen werden.", err));
+  if (err)
+    showError(errorMessage("Vereine konnten nicht geladen werden.", err));
 });
 
 const {
@@ -91,7 +91,8 @@ const {
 const teams = computed<Team[]>(() => teamsRaw.value ?? []);
 
 watch(teamsError, (err) => {
-  if (err) showError(errorMessage("Mannschaften konnten nicht geladen werden.", err));
+  if (err)
+    showError(errorMessage("Mannschaften konnten nicht geladen werden.", err));
 });
 
 const {
@@ -107,12 +108,9 @@ const {
   },
   transform: (res) => {
     const season = res.data.head_infos.season;
-
-    return [
-      ...res.data.meetings_excerpt.meetings
-          .flatMap((group) => Object.values(group).flat())
-          .map((meeting): Meeting => ({ ...meeting, season })),
-    ];
+    return res.data.meetings_excerpt.meetings
+      .flatMap((group) => Object.values(group).flat())
+      .map((meeting): Meeting => ({ ...meeting, season }));
   },
   immediate: false,
   watch: false,
@@ -122,8 +120,13 @@ const meetings = computed<Meeting[]>(() => meetingsRaw.value ?? []);
 const scheduleLoading = computed(() => meetingsStatus.value === "pending");
 
 watch(meetingsError, (err) => {
-  if (err) showError(errorMessage("Spielplan konnte nicht geladen werden.", err));
+  if (err)
+    showError(errorMessage("Spielplan konnte nicht geladen werden.", err));
 });
+
+// ---------------------------------------------------------------------------
+// Auswahl-Handler & Wiederherstellung
+// ---------------------------------------------------------------------------
 
 async function onTeamSelected() {
   await fetchMeetingsExecute();
@@ -169,9 +172,7 @@ async function restoreFromSession() {
 
     if (savedTeam) {
       const parsedTeam: Team = JSON.parse(savedTeam);
-      const match = teams.value?.find(
-          (t) => t.team_id === parsedTeam.team_id,
-      );
+      const match = teams.value?.find((t) => t.team_id === parsedTeam.team_id);
       if (match) {
         selectedTeam.value = match;
         await fetchMeetingsExecute();
@@ -186,6 +187,10 @@ async function restoreFromSession() {
 onMounted(async () => {
   await restoreFromSession();
 });
+
+// ---------------------------------------------------------------------------
+// Gruppierung nach Runde
+// ---------------------------------------------------------------------------
 
 type RoundGroup = MeetingGroup & { label: string };
 
@@ -210,7 +215,7 @@ function roundLabel(meeting: Meeting): string {
 const groupedByRound = computed<RoundGroup[]>(() => {
   const groups = new Map<string, RoundGroup>();
 
-  for (const meeting of meetings.value ?? []) {
+  for (const meeting of meetings.value) {
     const key = roundKey(meeting);
     let group = groups.get(key);
     if (!group) {
@@ -307,7 +312,7 @@ const groupedByRound = computed<RoundGroup[]>(() => {
         </v-tab>
       </v-tabs>
 
-      <div v-if="scheduleLoading" ref="sentinel" class="pa-2 text-center">
+      <div v-if="scheduleLoading" class="pa-2 text-center">
         <v-progress-circular indeterminate color="primary" />
       </div>
       <v-tabs-window v-model="selectedRoundTab">
@@ -319,7 +324,6 @@ const groupedByRound = computed<RoundGroup[]>(() => {
           <meeting-table
             v-if="!scheduleLoading"
             :meetings="group.meetings"
-            :selected-club="selectedClub"
             :selected-team="selectedTeam"
           />
         </v-tabs-window-item>

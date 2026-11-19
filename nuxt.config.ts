@@ -15,6 +15,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       baseApiUrl: "https://www.mytischtennis.de",
+      baseTtPortalApiUrl: "https://ttde-portal.liga.nu",
     },
   },
 

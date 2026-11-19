@@ -13,7 +13,7 @@ const selectedTeam = ref<string | null>(null);
 const selectedMonthTab = ref<string>();
 
 const { data, status, error } = useFetch<{ meetings: ScheduleMeeting[] }>(
-    "/api/altenstadt-schedule",
+  "/api/altenstadt-schedule",
 );
 
 const loading = computed(() => status.value === "pending");
@@ -24,15 +24,15 @@ watch(error, (err) => {
 });
 
 const teams = computed<string[]>(() =>
-    [...new Set(meetings.value.map((m) => m.team))].sort((a, b) =>
-        a.localeCompare(b, "de", { numeric: true }),
-    ),
+  [...new Set(meetings.value.map((m) => m.team))].sort((a, b) =>
+    a.localeCompare(b, "de", { numeric: true }),
+  ),
 );
 
 const filteredMeetings = computed(() =>
-    selectedTeam.value
-        ? meetings.value.filter((m) => m.team === selectedTeam.value)
-        : meetings.value,
+  selectedTeam.value
+    ? meetings.value.filter((m) => m.team === selectedTeam.value)
+    : meetings.value,
 );
 
 interface MonthGroup {
@@ -67,13 +67,13 @@ const groupedByMonth = computed<MonthGroup[]>(() => {
 
 // Tab zurücksetzen, wenn sich die Gruppen ändern
 watch(
-    groupedByMonth,
-    (groups) => {
-      if (!groups.some((g) => g.key === selectedMonthTab.value)) {
-        selectedMonthTab.value = groups[0]?.key;
-      }
-    },
-    { immediate: true },
+  groupedByMonth,
+  (groups) => {
+    if (!groups.some((g) => g.key === selectedMonthTab.value)) {
+      selectedMonthTab.value = groups[0]?.key;
+    }
+  },
+  { immediate: true },
 );
 
 function onTeamSelected() {
@@ -113,13 +113,13 @@ function openMeeting(meeting: ScheduleMeeting) {
     <v-card class="mb-4">
       <v-card-text>
         <v-select
-            v-model="selectedTeam"
-            :items="teams"
-            :loading="loading"
-            label="Mannschaft wählen (leer = alle)"
-            variant="outlined"
-            clearable
-            @update:model-value="onTeamSelected"
+          v-model="selectedTeam"
+          :items="teams"
+          :loading="loading"
+          label="Mannschaft wählen (leer = alle)"
+          variant="outlined"
+          clearable
+          @update:model-value="onTeamSelected"
         />
       </v-card-text>
     </v-card>
@@ -132,41 +132,53 @@ function openMeeting(meeting: ScheduleMeeting) {
 
       <template v-else>
         <v-tabs v-model="selectedMonthTab">
-          <v-tab v-for="group in groupedByMonth" :key="group.key" :value="group.key">
+          <v-tab
+            v-for="group in groupedByMonth"
+            :key="group.key"
+            :value="group.key"
+          >
             {{ group.label }}
           </v-tab>
         </v-tabs>
 
         <v-tabs-window v-model="selectedMonthTab">
           <v-tabs-window-item
-              v-for="group in groupedByMonth"
-              :key="group.key"
-              :value="group.key"
+            v-for="group in groupedByMonth"
+            :key="group.key"
+            :value="group.key"
           >
             <v-table>
               <thead>
-              <tr>
-                <th>Datum</th>
-                <th>Zeit</th>
-                <th v-if="!selectedTeam">Mannschaft</th>
-                <th>Heim</th>
-                <th>Gast</th>
-                <th />
-              </tr>
+                <tr>
+                  <th>Datum</th>
+                  <th>Zeit</th>
+                  <th v-if="!selectedTeam">Mannschaft</th>
+                  <th>Heim</th>
+                  <th>Gast</th>
+                  <th />
+                </tr>
               </thead>
               <tbody>
-              <tr v-for="meeting in group.meetings" :key="meeting.matchId">
-                <td>{{ formatDate(meeting.date) }}</td>
-                <td>{{ meeting.time }}</td>
-                <td v-if="!selectedTeam">{{ meeting.team }}</td>
-                <td :class="{ 'font-weight-bold': meeting.isHome }">{{ meeting.home }}</td>
-                <td :class="{ 'font-weight-bold': !meeting.isHome }">{{ meeting.guest }}</td>
-                <td class="text-right">
-                  <v-btn size="small" variant="tonal" @click="openMeeting(meeting)">
-                    Live
-                  </v-btn>
-                </td>
-              </tr>
+                <tr v-for="meeting in group.meetings" :key="meeting.matchId">
+                  <td>{{ formatDate(meeting.date) }}</td>
+                  <td>{{ meeting.time }}</td>
+                  <td v-if="!selectedTeam">{{ meeting.team }}</td>
+                  <td :class="{ 'font-weight-bold': meeting.isHome }">
+                    {{ meeting.home }}
+                  </td>
+                  <td :class="{ 'font-weight-bold': !meeting.isHome }">
+                    {{ meeting.guest }}
+                  </td>
+                  <td class="text-right">
+                    <v-btn
+                      size="small"
+                      variant="tonal"
+                      @click="openMeeting(meeting)"
+                    >
+                      Live
+                    </v-btn>
+                  </td>
+                </tr>
               </tbody>
             </v-table>
           </v-tabs-window-item>

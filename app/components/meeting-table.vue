@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import type { Meeting } from "~/models/meeting.ts";
-import type { Club } from "~/models/club.ts";
 import type { Team } from "~/models/team.ts";
 import { formatDate } from "~/composables/useDateUtils.ts";
 
-const props = defineProps<{
+defineProps<{
   meetings: Meeting[];
-  selectedClub: Club | undefined;
   selectedTeam: Team | undefined;
 }>();
 
@@ -31,10 +29,7 @@ const meetingHeaders = [
 ];
 
 function onMeetingClick(_: any, item: { item: Meeting }) {
-  const season = item.item.season.replace("/", "--")
-  router.push(
-    `/meetings/${item.item.meeting_id}?association=${props.selectedClub?.organization_short}&group_id=${props.selectedTeam?.group_id}&season=${season}`
-  );
+  router.push(`/meetings/${item.item.meeting_id}`);
 }
 </script>
 
