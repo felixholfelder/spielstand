@@ -324,7 +324,6 @@ const groupedByRound = computed<RoundGroup[]>(() => {
           <meeting-table
             v-if="!scheduleLoading"
             :meetings="group.meetings"
-            :selected-club="selectedClub"
             :selected-team="selectedTeam"
           />
         </v-tabs-window-item>

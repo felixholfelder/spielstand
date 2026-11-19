@@ -9,8 +9,6 @@ const props = withDefaults(
     defineProps<{
       load: () => Promise<LiveMeeting>;
       intervalMinutes?: number;
-      homeLogoId?: string;
-      awayLogoId?: string;
     }>(),
     { intervalMinutes: 1 },
 );
@@ -19,24 +17,21 @@ const { fontSize: gamesCountFontSize } = useGamesCountFontSize();
 
 const liveMeeting = ref<LiveMeeting>();
 
+const homeLogoId = computed(() => liveMeeting.value?.home_logo_id);
+const awayLogoId = computed(() => liveMeeting.value?.guest_logo_id);
+
 // Ein Logo, das nicht geladen werden kann, wird einfach nicht angezeigt
 const homeLogoFailed = ref(false);
 const awayLogoFailed = ref(false);
 
-watch(
-    () => props.homeLogoId,
-    () => (homeLogoFailed.value = false),
-);
-watch(
-    () => props.awayLogoId,
-    () => (awayLogoFailed.value = false),
-);
+watch(homeLogoId, () => (homeLogoFailed.value = false));
+watch(awayLogoId, () => (awayLogoFailed.value = false));
 
 const showHomeLogo = computed(
-    () => !!props.homeLogoId && !homeLogoFailed.value,
+    () => !!homeLogoId.value && !homeLogoFailed.value,
 );
 const showAwayLogo = computed(
-    () => !!props.awayLogoId && !awayLogoFailed.value,
+    () => !!awayLogoId.value && !awayLogoFailed.value,
 );
 
 async function loadMeeting() {
@@ -152,7 +147,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 0.4em;
-  min-height: 3em;
+  min-height: 4.5em;
   max-width: 100%;
   font-size: clamp(20px, 3vw, 260px);
 }

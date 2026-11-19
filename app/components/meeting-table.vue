@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import type { Meeting } from "~/models/meeting.ts";
-import type { Club } from "~/models/club.ts";
 import type { Team } from "~/models/team.ts";
 import { formatDate } from "~/composables/useDateUtils.ts";
 
-const props = defineProps<{
+defineProps<{
   meetings: Meeting[];
-  selectedClub: Club | undefined;
   selectedTeam: Team | undefined;
 }>();
 
@@ -31,20 +29,7 @@ const meetingHeaders = [
 ];
 
 function onMeetingClick(_: any, item: { item: Meeting }) {
-  const meeting = item.item;
-
-  router.push({
-    path: `/meetings/${meeting.meeting_id}`,
-    query: {
-      association: props.selectedClub?.organization_short,
-      group_id: props.selectedTeam?.group_id,
-      season: meeting.season.replace("/", "--"),
-      // Das Scoreboard lädt die Logos selbst nach, dafür braucht es die Team-IDs
-      team_association: props.selectedTeam?.team_organisation_short,
-      home_team_id: meeting.team_home_id,
-      away_team_id: meeting.team_away_id,
-    },
-  });
+  router.push(`/meetings/${item.item.meeting_id}`);
 }
 </script>
 
