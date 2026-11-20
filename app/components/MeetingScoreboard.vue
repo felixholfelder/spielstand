@@ -34,6 +34,33 @@ const showAwayLogo = computed(
     () => !!awayLogoId.value && !awayLogoFailed.value,
 );
 
+// Glückwunsch-Popup, sobald das Spiel beendet ist
+const isComplete = computed(
+    () => liveMeeting.value?.is_meeting_complete === true,
+);
+
+const winner = computed(() => {
+  const m = liveMeeting.value;
+  if (!m) return undefined;
+  if (m.matches_home > m.matches_guest) {
+    return { name: m.team_home, logoId: homeLogoId.value };
+  }
+  if (m.matches_guest > m.matches_home) {
+    return { name: m.team_guest, logoId: awayLogoId.value };
+  }
+  return undefined; // Unentschieden
+});
+
+const showCelebration = ref(false);
+let celebrated = false; // pro Seitenaufruf nur einmal, auch bei jedem Refresh
+
+watch(isComplete, (complete) => {
+  if (complete && !celebrated) {
+    celebrated = true;
+    showCelebration.value = true;
+  }
+});
+
 async function loadMeeting() {
   try {
     liveMeeting.value = await props.load();
@@ -73,7 +100,7 @@ onUnmounted(() => {
               alt=""
               class="team-logo"
               @error="homeLogoFailed = true"
-          />
+          >
           <div class="team">{{ liveMeeting?.team_home }}</div>
         </div>
       </v-col>
@@ -101,11 +128,18 @@ onUnmounted(() => {
               alt=""
               class="team-logo"
               @error="awayLogoFailed = true"
-          />
+          >
           <div class="team">{{ liveMeeting?.team_guest }}</div>
         </div>
       </v-col>
     </v-row>
+
+    <meeting-celebration
+        v-model="showCelebration"
+        :winner="winner"
+        :score-home="liveMeeting?.matches_home ?? 0"
+        :score-guest="liveMeeting?.matches_guest ?? 0"
+    />
   </v-container>
 </template>
 

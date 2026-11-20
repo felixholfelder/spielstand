@@ -5,6 +5,7 @@ export interface LiveMeeting {
   matches_guest: number;
   home_logo_id?: string;
   guest_logo_id?: string;
+  is_meeting_complete: boolean;
 }
 
 export interface LiveMeetingsResponse {
