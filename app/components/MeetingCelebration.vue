@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { clubLogoUrl } from "~/composables/useClubLogo.ts";
-
-interface Winner {
-  name: string;
-  logoId?: string | null;
-}
+import type {Game} from "~/models/game.ts";
 
 const props = withDefaults(
     defineProps<{
-      winner?: Winner | undefined;
-      scoreHome: number;
-      scoreGuest: number;
+      game?: Game | undefined;
       confettiDuration?: number;
     }>(),
     { confettiDuration: 10_000 },
@@ -24,11 +18,11 @@ const CONFETTI_COLORS = ["#f44336", "#ffc107", "#4caf50", "#2196f3", "#e91e63"];
 // Ein Logo, das nicht geladen werden kann, wird einfach nicht angezeigt
 const logoFailed = ref(false);
 watch(
-    () => props.winner?.logoId,
+    () => props.game?.winnerLogoId,
     () => (logoFailed.value = false),
 );
 const showLogo = computed(
-    () => !!props.winner?.logoId && !logoFailed.value,
+    () => !!props.game?.winnerLogoId && !logoFailed.value,
 );
 
 let confettiActive = false;
@@ -60,7 +54,7 @@ async function fireConfetti() {
 
 watch(open, (isOpen) => {
   if (isOpen) {
-    if (props.winner) fireConfetti();
+    if (!props.game?.isDraw()) fireConfetti();
   } else {
     confettiActive = false;
   }
@@ -73,26 +67,34 @@ onBeforeUnmount(() => {
 
 <template>
   <v-dialog v-model="open" max-width="1300">
-    <v-card class="celebration pa-8 text-center" @click="open = false">
+    <v-card class="celebration pa-8 text-center" max-height="90vh" @click="open = false">
       <div class="celebration-title">
-        {{ winner ? "Glückwunsch an" : "Spiel beendet" }}
+        {{ !game?.isDraw() ? "Glückwunsch an" : "Spiel beendet" }}
       </div>
 
-      <!-- Name immer genau einmal, mit oder ohne Logo -->
       <div class="celebration-team">
-        {{ winner ? `${winner.name}!` : "Unentschieden" }}
+        {{ !game?.isDraw() ? `${game?.winner}!` : "Unentschieden" }}
       </div>
 
-      <!-- Logo nur, wenn vorhanden. Ohne Logo rückt der Rest einfach nach. -->
       <img
-          v-if="showLogo"
-          :src="clubLogoUrl(winner?.logoId)"
+          v-if="showLogo && !game?.isDraw()"
+          :src="clubLogoUrl(game?.winnerLogoId)"
           alt=""
           class="celebration-logo"
           @error="logoFailed = true"
       >
 
-      <div class="celebration-score">{{ scoreHome }}:{{ scoreGuest }}</div>
+      <v-row>
+        <v-col cols="5" class="d-flex align-center justify-center">
+          <div class="text-lg-headline-large">{{ game?.teamHome }}</div>
+        </v-col>
+        <v-col cols="2" class="d-flex align-center justify-center">
+          <div class="celebration-score">{{ game?.scoreHome }}:{{ game?.scoreAway }}</div>
+        </v-col>
+        <v-col cols="5" class="d-flex align-center justify-center">
+          <div class="text-lg-headline-large">{{ game?.teamAway }}</div>
+        </v-col>
+      </v-row>
     </v-card>
   </v-dialog>
 </template>
@@ -122,7 +124,7 @@ onBeforeUnmount(() => {
   display: block;
   margin: 24px auto 0;
   max-width: 60%;
-  height: clamp(100px, 20vh, 240px);
+  height: clamp(100px, 24vh, 240px);
   object-fit: contain;
 }
 

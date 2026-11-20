@@ -2,6 +2,7 @@
 import type { LiveMeeting } from "~/models/live-meeting";
 import { useGamesCountFontSize } from "~/composables/useGamesCountFontsize.ts";
 import { clubLogoUrl } from "~/composables/useClubLogo.ts";
+import {Game} from "~/models/game.ts";
 
 const { meetingFetchError } = useLayoutControls();
 
@@ -39,16 +40,20 @@ const isComplete = computed(
     () => liveMeeting.value?.is_meeting_complete === true,
 );
 
-const winner = computed(() => {
+const game = computed(() => {
   const m = liveMeeting.value;
   if (!m) return undefined;
+  console.log(homeLogoId.value);
+  const game = new Game(m.team_home, m.team_home, m.team_guest, m.matches_home, m.matches_guest, homeLogoId.value)
   if (m.matches_home > m.matches_guest) {
-    return { name: m.team_home, logoId: homeLogoId.value };
+    return game;
   }
   if (m.matches_guest > m.matches_home) {
-    return { name: m.team_guest, logoId: awayLogoId.value };
+    game.winner = m.team_guest;
+    game.winnerLogoId = awayLogoId.value;
+    return game;
   }
-  return undefined; // Unentschieden
+  return game; // Unentschieden
 });
 
 const showCelebration = ref(false);
@@ -136,9 +141,7 @@ onUnmounted(() => {
 
     <meeting-celebration
         v-model="showCelebration"
-        :winner="winner"
-        :score-home="liveMeeting?.matches_home ?? 0"
-        :score-guest="liveMeeting?.matches_guest ?? 0"
+        :game="game"
     />
   </v-container>
 </template>
