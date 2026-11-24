@@ -37,7 +37,7 @@ const showAwayLogo = computed(
 
 // Glückwunsch-Popup, sobald das Spiel beendet ist
 const isComplete = computed(
-    () => liveMeeting.value?.is_meeting_complete === true,
+    () => liveMeeting.value?.is_completed === true,
 );
 
 const game = computed(() => {
