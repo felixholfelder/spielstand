@@ -6,6 +6,8 @@ export interface LiveMeeting {
   home_logo_id?: string;
   guest_logo_id?: string;
   is_completed: boolean;
+  win_point_decision: string;
+  play_mode: string;
 }
 
 export interface LiveMeetingsResponse {

@@ -2,7 +2,7 @@
 import type { LiveMeeting } from "~/models/live-meeting";
 import { useGamesCountFontSize } from "~/composables/useGamesCountFontsize.ts";
 import { clubLogoUrl } from "~/composables/useClubLogo.ts";
-import {Game} from "~/models/game.ts";
+import { getMeetingResult } from "~/composables/useMeetingResult.ts";
 
 const { meetingFetchError } = useLayoutControls();
 
@@ -18,6 +18,7 @@ const { fontSize: gamesCountFontSize } = useGamesCountFontSize();
 
 const liveMeeting = ref<LiveMeeting>();
 
+// Logo-IDs kommen direkt mit den Meeting-Daten
 const homeLogoId = computed(() => liveMeeting.value?.home_logo_id);
 const awayLogoId = computed(() => liveMeeting.value?.guest_logo_id);
 
@@ -35,36 +36,43 @@ const showAwayLogo = computed(
     () => !!awayLogoId.value && !awayLogoFailed.value,
 );
 
-// Glückwunsch-Popup, sobald das Spiel beendet ist
-const isComplete = computed(
-    () => liveMeeting.value?.is_completed === true,
+// Glückwunsch-Popup, sobald ein Ergebnis feststeht (Sieger oder Unentschieden).
+// Wann das der Fall ist, hängt von win_point_decision ab, siehe getMeetingResult.
+const meetingResult = computed(() =>
+    liveMeeting.value
+        ? getMeetingResult(liveMeeting.value)
+        : ({ status: "open" } as const),
 );
 
-const game = computed(() => {
+const winnerSide = computed(() =>
+    meetingResult.value.status === "winner" ? meetingResult.value.side : undefined,
+);
+
+// Beide Seiten gehen ans Popup, der Gewinner kommt aus getMeetingResult
+const homeSide = computed(() => {
   const m = liveMeeting.value;
   if (!m) return undefined;
-  console.log(homeLogoId.value);
-  const game = new Game(m.team_home, m.team_home, m.team_guest, m.matches_home, m.matches_guest, homeLogoId.value)
-  if (m.matches_home > m.matches_guest) {
-    return game;
-  }
-  if (m.matches_guest > m.matches_home) {
-    game.winner = m.team_guest;
-    game.winnerLogoId = awayLogoId.value;
-    return game;
-  }
-  return game; // Unentschieden
+  return { name: m.team_home, logoId: homeLogoId.value, score: m.matches_home };
+});
+
+const guestSide = computed(() => {
+  const m = liveMeeting.value;
+  if (!m) return undefined;
+  return { name: m.team_guest, logoId: awayLogoId.value, score: m.matches_guest };
 });
 
 const showCelebration = ref(false);
 let celebrated = false; // pro Seitenaufruf nur einmal, auch bei jedem Refresh
 
-watch(isComplete, (complete) => {
-  if (complete && !celebrated) {
-    celebrated = true;
-    showCelebration.value = true;
-  }
-});
+watch(
+    () => meetingResult.value.status,
+    (status) => {
+      if (status !== "open" && !celebrated) {
+        celebrated = true;
+        showCelebration.value = true;
+      }
+    },
+);
 
 async function loadMeeting() {
   try {
@@ -110,7 +118,7 @@ onUnmounted(() => {
         </div>
       </v-col>
 
-      <v-col class="separator-col" cols="auto">
+      <v-col class="text-center separator-col">
         <div
             class="separator"
             :style="{ fontSize: `${gamesCountFontSize * 0.55}px` }"
@@ -141,7 +149,9 @@ onUnmounted(() => {
 
     <meeting-celebration
         v-model="showCelebration"
-        :game="game"
+        :home="homeSide"
+        :guest="guestSide"
+        :winner-side="winnerSide"
     />
   </v-container>
 </template>

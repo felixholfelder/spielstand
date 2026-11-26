@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import { clubLogoUrl } from "~/composables/useClubLogo.ts";
-import type {Game} from "~/models/game.ts";
+
+interface Side {
+  name: string;
+  logoId?: string | null;
+  score: number;
+}
 
 const props = withDefaults(
     defineProps<{
-      game?: Game | undefined;
+      home?: Side;
+      guest?: Side;
+      winnerSide?: "home" | "guest"; // undefined = Unentschieden
       confettiDuration?: number;
     }>(),
-    { confettiDuration: 10_000 },
+    { home: undefined, guest: undefined, winnerSide: undefined, confettiDuration: 10_000 },
 );
 
 // v-model: Popup offen/geschlossen
@@ -15,15 +22,17 @@ const open = defineModel<boolean>({ default: false });
 
 const CONFETTI_COLORS = ["#f44336", "#ffc107", "#4caf50", "#2196f3", "#e91e63"];
 
-// Ein Logo, das nicht geladen werden kann, wird einfach nicht angezeigt
-const logoFailed = ref(false);
-watch(
-    () => props.game?.winnerLogoId,
-    () => (logoFailed.value = false),
-);
-const showLogo = computed(
-    () => !!props.game?.winnerLogoId && !logoFailed.value,
-);
+// Gewinner und Gegner. Wer gewonnen hat, entscheidet der Aufrufer
+// (siehe getMeetingResult). Ohne winnerSide ist es ein Unentschieden.
+const result = computed(() => {
+  const { home, guest, winnerSide } = props;
+  if (!home || !guest || !winnerSide) return undefined;
+  return winnerSide === "home"
+      ? { winner: home, opponent: guest }
+      : { winner: guest, opponent: home };
+});
+
+const winner = computed(() => result.value?.winner);
 
 let confettiActive = false;
 
@@ -54,7 +63,7 @@ async function fireConfetti() {
 
 watch(open, (isOpen) => {
   if (isOpen) {
-    if (!props.game?.isDraw()) fireConfetti();
+    if (winner.value) fireConfetti();
   } else {
     confettiActive = false;
   }
@@ -67,32 +76,31 @@ onBeforeUnmount(() => {
 
 <template>
   <v-dialog v-model="open" max-width="1300">
-    <v-card class="celebration pa-8 text-center" max-height="90vh" @click="open = false">
+    <v-card class="celebration pa-8 text-center" @click="open = false">
       <div class="celebration-title">
-        {{ !game?.isDraw() ? "Glückwunsch an" : "Spiel beendet" }}
+        {{ winner ? "Glückwunsch an" : "Spiel beendet" }}
       </div>
 
       <div class="celebration-team">
-        {{ !game?.isDraw() ? `${game?.winner}!` : "Unentschieden" }}
+        {{ winner ? `${winner.name}!` : "Unentschieden" }}
       </div>
 
       <img
-          v-if="showLogo && !game?.isDraw()"
-          :src="clubLogoUrl(game?.winnerLogoId)"
+          v-if="winnerSide && winner?.logoId"
+          :src="clubLogoUrl(winner?.logoId)"
           alt=""
           class="celebration-logo"
-          @error="logoFailed = true"
       >
 
       <v-row>
         <v-col cols="5" class="d-flex align-center justify-center">
-          <div class="text-lg-headline-large">{{ game?.teamHome }}</div>
+          <div class="text-lg-headline-large">{{ home?.name }}</div>
         </v-col>
         <v-col cols="2" class="d-flex align-center justify-center">
-          <div class="celebration-score">{{ game?.scoreHome }}:{{ game?.scoreAway }}</div>
+          <div class="celebration-score">{{ home?.score }}:{{ guest?.score }}</div>
         </v-col>
         <v-col cols="5" class="d-flex align-center justify-center">
-          <div class="text-lg-headline-large">{{ game?.teamAway }}</div>
+          <div class="text-lg-headline-large">{{ guest?.name }}</div>
         </v-col>
       </v-row>
     </v-card>
