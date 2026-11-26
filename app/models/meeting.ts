@@ -15,6 +15,7 @@ export interface Meeting {
   season: string;
   team_home_club_logo_id?: string;
   team_away_club_logo_id?: string;
+  play_mode: string;
 }
 
 export interface MeetingGroup {
@@ -31,6 +32,7 @@ export interface MeetingsResponse {
     head_infos: {
       club_logo_id: string;
       season: string;
+      play_mode: string;
     };
     meetings_excerpt: {
       meetings: MeetingResponseGroup[];

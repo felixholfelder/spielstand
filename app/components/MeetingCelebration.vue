@@ -82,7 +82,7 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="celebration-team">
-        {{ winner ? `${winner.name}!` : "Unentschieden" }}
+        {{ winner ? `${winner.name}` : "Unentschieden" }}
       </div>
 
       <img

@@ -29,7 +29,7 @@ const meetingHeaders = [
 ];
 
 function onMeetingClick(_: any, item: { item: Meeting }) {
-  router.push(`/meetings/${item.item.meeting_id}`);
+  router.push(`/meetings/${item.item.meeting_id}?play_mode=${item.item.play_mode}`);
 }
 </script>
 

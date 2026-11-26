@@ -30,7 +30,7 @@ export function getMeetingResult(meeting: LiveMeeting): MeetingResult {
     const home = meeting.matches_home;
     const guest = meeting.matches_guest;
 
-    if (meeting.win_point_decision === "WINPOINT") {
+    if (WIN_POINTS_BY_PLAY_MODE[meeting.play_mode] !== undefined) {
         const winPoint = WIN_POINTS_BY_PLAY_MODE[meeting.play_mode ?? ""];
         if (winPoint !== undefined) {
             const homeReached = home >= winPoint;
@@ -40,7 +40,7 @@ export function getMeetingResult(meeting: LiveMeeting): MeetingResult {
         }
     }
 
-    if (meeting.win_point_decision === "ALLGAMES") {
+    if (TOTAL_POINTS_BY_PLAY_MODE[meeting.play_mode] !== undefined) {
         const totalGames = TOTAL_POINTS_BY_PLAY_MODE[meeting.play_mode ?? ""];
         if (totalGames !== undefined) {
             if (home + guest !== totalGames)

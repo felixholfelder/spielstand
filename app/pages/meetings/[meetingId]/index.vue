@@ -14,7 +14,10 @@ async function loadMeeting(): Promise<LiveMeeting> {
     },
   });
 
-  return res.data;
+  return {
+    ...res.data,
+    play_mode: route.query.play_mode,
+  }
 }
 </script>
 

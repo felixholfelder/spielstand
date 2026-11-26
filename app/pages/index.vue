@@ -108,9 +108,10 @@ const {
   },
   transform: (res) => {
     const season = res.data.head_infos.season;
+    const play_mode = res.data.head_infos.play_mode;
     return res.data.meetings_excerpt.meetings
       .flatMap((group) => Object.values(group).flat())
-      .map((meeting): Meeting => ({ ...meeting, season }));
+      .map((meeting): Meeting => ({ ...meeting, season, play_mode }));
   },
   immediate: false,
   watch: false,
