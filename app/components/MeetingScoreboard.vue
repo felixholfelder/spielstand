@@ -183,7 +183,7 @@ onUnmounted(() => {
 .separator {
   font-weight: 700;
   line-height: 1;
-  margin-bottom: 64px;
+  margin-bottom: 240px;
 }
 
 /* Logo und Name nebeneinander. Die Schriftgröße wird hier gesetzt, das Logo
